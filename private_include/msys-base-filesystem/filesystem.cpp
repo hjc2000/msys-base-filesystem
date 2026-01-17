@@ -395,26 +395,64 @@ bool base::filesystem::Exists(base::Path const &path)
 
 base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_obj_path)
 {
-	if (!base::filesystem::IsSymbolicLink(symbolic_link_obj_path))
 	{
-		throw std::runtime_error{CODE_POS_STR + "传进来的路径必须是一个符号链接的路径。"};
+		// if (!base::filesystem::IsSymbolicLink(symbolic_link_obj_path))
+		// {
+		// 	throw std::runtime_error{CODE_POS_STR + "传进来的路径必须是一个符号链接的路径。"};
+		// }
+
+		// std::error_code error_code{};
+		// std::filesystem::path target_path = std::filesystem::read_symlink(symbolic_link_obj_path.ToString(), error_code);
+
+		// if (error_code.value() != 0)
+		// {
+		// 	std::string message = CODE_POS_STR;
+
+		// 	message += std::format("读取符号链接失败。错误代码：{}，错误消息：{}",
+		// 						   error_code.value(),
+		// 						   error_code.message());
+
+		// 	throw std::runtime_error{message};
+		// }
+
+		// return target_path.string();
 	}
 
-	std::error_code error_code{};
-	std::filesystem::path target_path = std::filesystem::read_symlink(symbolic_link_obj_path.ToString(), error_code);
+	HANDLE h = CreateFileA(symbolic_link_obj_path.ToString().c_str(),
+						   0,
+						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+						   nullptr,
+						   OPEN_EXISTING,
+						   FILE_FLAG_BACKUP_SEMANTICS,
+						   nullptr);
 
-	if (error_code.value() != 0)
+	if (h == INVALID_HANDLE_VALUE)
 	{
-		std::string message = CODE_POS_STR;
-
-		message += std::format("读取符号链接失败。错误代码：{}，错误消息：{}",
-							   error_code.value(),
-							   error_code.message());
-
-		throw std::runtime_error{message};
+		throw std::runtime_error{"CreateFileA failed"};
 	}
 
-	return target_path.string();
+	char buffer[MAX_PATH];
+
+	DWORD len = GetFinalPathNameByHandleA(h,
+										  buffer,
+										  MAX_PATH,
+										  FILE_NAME_NORMALIZED);
+
+	CloseHandle(h);
+
+	if (len == 0 || len >= MAX_PATH)
+	{
+		throw std::runtime_error{"GetFinalPathNameByHandleA failed"};
+	}
+
+	std::string result(buffer);
+
+	// 去掉 \\?\ 前缀
+	std::string const prefix = "\\\\?\\";
+	if (result.rfind(prefix, 0) == 0)
+		result.erase(0, prefix.size());
+
+	return result;
 }
 
 void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_path,
