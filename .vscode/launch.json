@@ -1,0 +1,16 @@
+{
+	"configurations": [
+		{
+			"name": "lldb",
+			"type": "lldb",
+			"request": "launch",
+			"cwd": "${command:cmake.launchTargetDirectory}",
+			"program": "${command:cmake.launchTargetPath}",
+			"args": [],
+			"sourceLanguages": [
+				"c",
+				"cpp"
+			],
+		}
+	]
+}
