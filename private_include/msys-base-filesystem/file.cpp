@@ -1,5 +1,5 @@
 #include "base/filesystem/file.h"
-#include "FileStream.h"
+#include "msys-base-filesystem/FileStream.h"
 
 std::shared_ptr<base::Stream> base::file::OpenOrCreate(base::Path const &path)
 {
