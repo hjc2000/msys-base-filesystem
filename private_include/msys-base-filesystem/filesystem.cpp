@@ -331,10 +331,12 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 	FILE_ATTRIBUTE_TAG_INFO info;
 	bool result = false;
 
-	if (GetFileInformationByHandleEx(h,
-									 FileAttributeTagInfo,
-									 &info,
-									 sizeof(info)))
+	WINBOOL call_result = GetFileInformationByHandleEx(h,
+													   FileAttributeTagInfo,
+													   &info,
+													   sizeof(info));
+
+	if (call_result)
 	{
 		result = (info.ReparseTag == IO_REPARSE_TAG_SYMLINK);
 	}
