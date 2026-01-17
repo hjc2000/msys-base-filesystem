@@ -315,6 +315,26 @@ bool base::filesystem::IsRegularFile(base::Path const &path)
 
 bool base::filesystem::IsSymbolicLink(base::Path const &path)
 {
+	{
+		// 这是基于标准库的实现，在 msys2 中不可用。
+
+		// std::error_code error_code{};
+		// bool ret = std::filesystem::is_symlink(path.ToString(), error_code);
+
+		// if (error_code.value() != 0)
+		// {
+		// 	std::string message = CODE_POS_STR;
+
+		// 	message += std::format("错误代码：{}，错误消息：{}",
+		// 						   error_code.value(),
+		// 						   error_code.message());
+
+		// 	throw std::runtime_error{message};
+		// }
+
+		// return ret;
+	}
+
 	HANDLE h = CreateFileA(path.ToString().c_str(),
 						   0,
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
