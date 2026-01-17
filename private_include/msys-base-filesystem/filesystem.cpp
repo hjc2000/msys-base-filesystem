@@ -9,6 +9,9 @@
 #include <string>
 #include <system_error>
 #include <unistd.h>
+#include <windows.h>
+
+#undef CreateDirectory
 
 namespace
 {
@@ -312,21 +315,32 @@ bool base::filesystem::IsRegularFile(base::Path const &path)
 
 bool base::filesystem::IsSymbolicLink(base::Path const &path)
 {
-	std::error_code error_code{};
-	bool ret = std::filesystem::is_symlink(path.ToString(), error_code);
+	HANDLE h = CreateFileA(path.ToString().c_str(),
+						   0,
+						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+						   nullptr,
+						   OPEN_EXISTING,
+						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+						   nullptr);
 
-	if (error_code.value() != 0)
+	if (h == INVALID_HANDLE_VALUE)
 	{
-		std::string message = CODE_POS_STR;
-
-		message += std::format("错误代码：{}，错误消息：{}",
-							   error_code.value(),
-							   error_code.message());
-
-		throw std::runtime_error{message};
+		return false;
 	}
 
-	return ret;
+	FILE_ATTRIBUTE_TAG_INFO info;
+	bool result = false;
+
+	if (GetFileInformationByHandleEx(h,
+									 FileAttributeTagInfo,
+									 &info,
+									 sizeof(info)))
+	{
+		result = (info.ReparseTag == IO_REPARSE_TAG_SYMLINK);
+	}
+
+	CloseHandle(h);
+	return result;
 }
 
 /* #endregion */
