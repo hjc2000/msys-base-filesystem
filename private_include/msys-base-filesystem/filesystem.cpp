@@ -338,7 +338,12 @@ bool base::filesystem::IsRegularFile(base::Path const &path)
 
 bool base::filesystem::IsSymbolicLink(base::Path const &path)
 {
-	HANDLE h = CreateFileA(path.ToString().c_str(),
+	base::Path absolute_path = base::filesystem::ToAbsolutePath(path);
+	base::String absolute_path_string = absolute_path.ToString();
+	absolute_path_string.Replace("/", "\\");
+	absolute_path_string = "\\\\?\\" + absolute_path_string;
+
+	HANDLE h = CreateFileA(absolute_path_string.StdString().c_str(),
 						   0,
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 						   nullptr,
