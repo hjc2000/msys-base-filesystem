@@ -32,5 +32,18 @@ int main()
 		}
 	}
 
+	{
+		bool result = base::filesystem::IsReadable(path);
+
+		if (result)
+		{
+			std::cout << path << " 可读。" << std::endl;
+		}
+		else
+		{
+			std::cout << path << " 不可读。" << std::endl;
+		}
+	}
+
 	return 0;
 }
