@@ -505,6 +505,11 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 ///
 bool base::filesystem::IsSymbolicLinkDirectory(base::Path const &path)
 {
+	if (!IsSymbolicLink(path))
+	{
+		return false;
+	}
+
 	DWORD attrs = GetFileAttributesA(path.ToString().c_str());
 
 	if (attrs == INVALID_FILE_ATTRIBUTES)
