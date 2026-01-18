@@ -560,33 +560,9 @@ void base::filesystem::Copy(base::Path const &source_path,
 				base::Path src_path = source_path + relative_path;
 				base::Path dst_path = destination_path + relative_path;
 
-				if (base::filesystem::IsSymbolicLink(src_path))
-				{
-					base::filesystem::CopySymbolicLink(src_path,
-													   dst_path,
-													   overwrite_method);
-
-					continue;
-				}
-
-				if (base::filesystem::IsRegularFile(src_path))
-				{
-					// 源路径是一个文件
-					CopyRegularFile(src_path,
-									dst_path,
-									overwrite_method);
-
-					continue;
-				}
-
-				if (base::filesystem::IsDirectory(src_path))
-				{
-					// 源路径是一个目录
-					EnsureDirectory(dst_path);
-					continue;
-				}
-
-				throw std::runtime_error{CODE_POS_STR + src_path.ToString() + " 是未知的目录条目类型。"};
+				base::filesystem::CopySingleLayer(src_path,
+												  dst_path,
+												  overwrite_method);
 			}
 
 			return;
