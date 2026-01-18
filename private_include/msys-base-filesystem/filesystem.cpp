@@ -761,7 +761,7 @@ void base::filesystem::Copy(base::Path const &source_path,
 
 		// 执行到这里说明源路径存在
 		if (base::filesystem::IsSymbolicLink(source_path) ||
-			base::filesystem::IsFile(source_path))
+			!base::filesystem::IsDirectory(source_path))
 		{
 			CopySingleFile(source_path, destination_path, overwrite_method);
 			return;
@@ -779,15 +779,15 @@ void base::filesystem::Copy(base::Path const &source_path,
 			base::Path src_path = source_path + relative_path;
 			base::Path dst_path = destination_path + relative_path;
 
-			if (IsFile(src_path))
-			{
-				// 源路径是一个文件
-				CopySingleFile(src_path, dst_path, overwrite_method);
-			}
-			else
+			if (IsDirectory(src_path))
 			{
 				// 源路径是一个目录
 				EnsureDirectory(dst_path);
+			}
+			else
+			{
+				// 源路径是一个文件
+				CopySingleFile(src_path, dst_path, overwrite_method);
 			}
 		}
 	}
