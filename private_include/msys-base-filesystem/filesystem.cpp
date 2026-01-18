@@ -72,6 +72,15 @@ namespace
 		}
 	};
 
+	///
+	/// @brief 检查符号链接文件本身的属性中是不是指示该符号链接应该链接一个目录。
+	///
+	/// @note windows 的傻逼设计，符号链接分成 2 种类型，不兼容的，一种是文件的
+	/// 符号链接，一种是目录的符号链接。
+	///
+	/// @param path
+	/// @return
+	///
 	bool IsSymbolicLinkDirectory(std::string const &path)
 	{
 		// 打开符号链接本身，而不是目标
