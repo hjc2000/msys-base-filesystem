@@ -127,8 +127,12 @@ namespace
 			return false;
 		}
 
-		// 检查创建时是否设置了 SYMBOLIC_LINK_FLAG_DIRECTORY
-		return (rdb->SymbolicLinkReparseBuffer.Flags & SYMBOLIC_LINK_FLAG_DIRECTORY) != 0;
+		if ((rdb->SymbolicLinkReparseBuffer.Flags & SYMBOLIC_LINK_FLAG_DIRECTORY) != 0)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	std::string ToWindowsLongPathString(base::Path const &path)
