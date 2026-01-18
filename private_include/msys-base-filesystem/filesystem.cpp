@@ -20,121 +20,6 @@
 
 #undef CreateDirectory
 
-namespace
-{
-	///
-	/// @brief 拷贝单个文件。
-	///
-	/// @param source_path 源路径。
-	/// 	@warning 这里没有进行检查。必须确保源路径是一个文件。
-	///
-	/// @param destination_path 目标路径
-	/// 	@note source_path 指向的对象复制后将是这个路径。也就是复制可以顺便重命名。
-	///
-	/// @param overwrite_method
-	///
-	void CopySingleFile(base::Path const &source_path,
-						base::Path const &destination_path,
-						base::filesystem::OverwriteOption overwrite_method)
-	{
-		try
-		{
-			if (destination_path.IsRootPath())
-			{
-				throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
-			}
-
-			std::filesystem::copy_options options = std::filesystem::copy_options::copy_symlinks;
-
-			if (!base::filesystem::Exists(destination_path))
-			{
-				// 目标路径不存在，直接复制。
-				base::filesystem::EnsureDirectory(destination_path.ParentPath());
-
-				// 拷贝单个文件。
-				// 没有进行检查，调用者必须确保源路径是一个文件。
-				if (base::filesystem::IsSymbolicLink(source_path))
-				{
-					base::filesystem::CreateSymboliclink(destination_path,
-														 base::filesystem::ReadSymboliclink(source_path),
-														 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
-				}
-				else
-				{
-					std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
-										  base::filesystem::ToWindowsLongPathString(destination_path),
-										  options);
-				}
-
-				return;
-			}
-
-			// 目标路径存在
-			if (overwrite_method == base::filesystem::OverwriteOption::Skip)
-			{
-				return;
-			}
-
-			if (overwrite_method == base::filesystem::OverwriteOption::Overwrite)
-			{
-				// 无条件覆盖。
-				base::filesystem::Remove(destination_path);
-
-				if (base::filesystem::IsSymbolicLink(source_path))
-				{
-					base::filesystem::CreateSymboliclink(destination_path,
-														 base::filesystem::ReadSymboliclink(source_path),
-														 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
-				}
-				else
-				{
-					std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
-										  base::filesystem::ToWindowsLongPathString(destination_path),
-										  options);
-				}
-
-				return;
-			}
-
-			// 如果更新则覆盖
-			std::filesystem::directory_entry src_entry{base::filesystem::ToWindowsLongPathString(source_path)};
-			std::filesystem::directory_entry dst_entry{base::filesystem::ToWindowsLongPathString(destination_path)};
-
-			if (src_entry.last_write_time() <= dst_entry.last_write_time())
-			{
-				return;
-			}
-
-			// 需要更新
-			base::filesystem::Remove(destination_path);
-
-			if (base::filesystem::IsSymbolicLink(source_path))
-			{
-				base::filesystem::CreateSymboliclink(destination_path,
-													 base::filesystem::ReadSymboliclink(source_path),
-													 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
-			}
-			else
-			{
-				std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
-									  base::filesystem::ToWindowsLongPathString(destination_path),
-									  options);
-			}
-
-			return;
-		}
-		catch (std::exception const &e)
-		{
-			throw std::runtime_error{CODE_POS_STR + e.what()};
-		}
-		catch (...)
-		{
-			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
-		}
-	}
-
-} // namespace
-
 /* #region 访问权限检查 */
 
 bool base::filesystem::IsReadable(base::Path const &path)
@@ -547,6 +432,86 @@ void base::filesystem::CopySymbolicLink(base::Path const &source_path,
 	}
 }
 
+void base::filesystem::CopyRegularFile(base::Path const &source_path,
+									   base::Path const &destination_path,
+									   base::filesystem::OverwriteOption overwrite_method)
+{
+	try
+	{
+		if (base::filesystem::IsSymbolicLink(source_path))
+		{
+			throw std::runtime_error{CODE_POS_STR + source_path.ToString() + " 是一个符号链接，不是常规文件。"};
+		}
+
+		if (!base::filesystem::IsRegularFile(source_path))
+		{
+			throw std::runtime_error{CODE_POS_STR + source_path.ToString() + " 不是一个常规文件。"};
+		}
+
+		if (destination_path.IsRootPath())
+		{
+			throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
+		}
+
+		std::filesystem::copy_options options = std::filesystem::copy_options::copy_symlinks;
+
+		if (!base::filesystem::Exists(destination_path))
+		{
+			// 目标路径不存在，直接复制。
+			base::filesystem::EnsureDirectory(destination_path.ParentPath());
+
+			// 拷贝单个文件。
+			std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
+								  base::filesystem::ToWindowsLongPathString(destination_path),
+								  options);
+
+			return;
+		}
+
+		// 目标路径存在
+		if (overwrite_method == base::filesystem::OverwriteOption::Skip)
+		{
+			return;
+		}
+
+		bool should_overwrite = false;
+
+		if (overwrite_method == base::filesystem::OverwriteOption::Overwrite)
+		{
+			should_overwrite = true;
+		}
+
+		// 如果更新则覆盖
+		std::filesystem::directory_entry src_entry{base::filesystem::ToWindowsLongPathString(source_path)};
+		std::filesystem::directory_entry dst_entry{base::filesystem::ToWindowsLongPathString(destination_path)};
+
+		if (src_entry.last_write_time() > dst_entry.last_write_time())
+		{
+			should_overwrite = true;
+		}
+
+		if (!should_overwrite)
+		{
+			return;
+		}
+
+		// 需要覆盖
+		base::filesystem::Remove(destination_path);
+
+		std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
+							  base::filesystem::ToWindowsLongPathString(destination_path),
+							  options);
+	}
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+	}
+}
+
 void base::filesystem::Copy(base::Path const &source_path,
 							base::Path const &destination_path,
 							base::filesystem::OverwriteOption overwrite_method)
@@ -577,7 +542,7 @@ void base::filesystem::Copy(base::Path const &source_path,
 
 		if (base::filesystem::IsRegularFile(source_path))
 		{
-			CopySingleFile(source_path, destination_path, overwrite_method);
+			CopyRegularFile(source_path, destination_path, overwrite_method);
 			return;
 		}
 
@@ -595,16 +560,33 @@ void base::filesystem::Copy(base::Path const &source_path,
 				base::Path src_path = source_path + relative_path;
 				base::Path dst_path = destination_path + relative_path;
 
-				if (IsDirectory(src_path))
+				if (base::filesystem::IsSymbolicLink(src_path))
+				{
+					base::filesystem::CopySymbolicLink(src_path,
+													   dst_path,
+													   overwrite_method);
+
+					continue;
+				}
+
+				if (base::filesystem::IsRegularFile(src_path))
+				{
+					// 源路径是一个文件
+					CopyRegularFile(src_path,
+									dst_path,
+									overwrite_method);
+
+					continue;
+				}
+
+				if (base::filesystem::IsDirectory(src_path))
 				{
 					// 源路径是一个目录
 					EnsureDirectory(dst_path);
+					continue;
 				}
-				else
-				{
-					// 源路径是一个文件
-					CopySingleFile(src_path, dst_path, overwrite_method);
-				}
+
+				throw std::runtime_error{CODE_POS_STR + src_path.ToString() + " 是未知的目录条目类型。"};
 			}
 
 			return;
