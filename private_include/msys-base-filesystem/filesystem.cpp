@@ -428,7 +428,12 @@ bool base::filesystem::Exists(base::Path const &path)
 
 base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_obj_path)
 {
-	HANDLE h = CreateFileA(symbolic_link_obj_path.ToString().c_str(),
+	base::Path absolute_path = base::filesystem::ToAbsolutePath(symbolic_link_obj_path);
+	base::String absolute_path_string = absolute_path.ToString();
+	absolute_path_string.Replace("/", "\\");
+	absolute_path_string = "\\\\?\\" + absolute_path_string;
+
+	HANDLE h = CreateFileA(absolute_path_string.StdString().c_str(),
 						   0,
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 						   nullptr,
@@ -509,7 +514,12 @@ void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_pa
 
 	flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
-	bool call_result = CreateSymbolicLinkA(symbolic_link_obj_path.ToString().c_str(),
+	base::Path absolute_path = base::filesystem::ToAbsolutePath(symbolic_link_obj_path);
+	base::String absolute_path_string = absolute_path.ToString();
+	absolute_path_string.Replace("/", "\\");
+	absolute_path_string = "\\\\?\\" + absolute_path_string;
+
+	bool call_result = CreateSymbolicLinkA(absolute_path_string.StdString().c_str(),
 										   link_to_path.ToString().c_str(),
 										   flags);
 
