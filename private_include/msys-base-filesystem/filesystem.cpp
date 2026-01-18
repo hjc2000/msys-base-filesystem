@@ -6,6 +6,7 @@
 #include "base/string/String.h"
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -38,26 +39,48 @@ namespace
 
 	std::string ToWindowsLongPathString(base::Path const &path)
 	{
-		base::Path absolute_path = base::filesystem::ToAbsolutePath(path);
-		base::String absolute_path_string = absolute_path.ToString();
-		absolute_path_string.Replace("/", "\\");
-		absolute_path_string = "\\\\?\\" + absolute_path_string;
-		return absolute_path_string.StdString();
+		try
+		{
+			base::Path absolute_path = base::filesystem::ToAbsolutePath(path);
+			base::String absolute_path_string = absolute_path.ToString();
+			absolute_path_string.Replace("/", "\\");
+			absolute_path_string = "\\\\?\\" + absolute_path_string;
+			return absolute_path_string.StdString();
+		}
+		catch (std::exception const &e)
+		{
+			throw std::runtime_error{CODE_POS_STR + e.what()};
+		}
+		catch (...)
+		{
+			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+		}
 	}
 
 	base::Path WindowsLongPathStringToPath(std::string const &path_string)
 	{
-		base::String result{path_string};
-
-		// 去掉 \\?\ 前缀
-		base::String prefix = "\\\\?\\";
-
-		if (result.StartWith(prefix))
+		try
 		{
-			result.Remove(base::Range{0, prefix.Length()});
-		}
+			base::String result{path_string};
 
-		return result;
+			// 去掉 \\?\ 前缀
+			base::String prefix = "\\\\?\\";
+
+			if (result.StartWith(prefix))
+			{
+				result.Remove(base::Range{0, prefix.Length()});
+			}
+
+			return result;
+		}
+		catch (std::exception const &e)
+		{
+			throw std::runtime_error{CODE_POS_STR + e.what()};
+		}
+		catch (...)
+		{
+			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+		}
 	}
 
 	///
@@ -96,8 +119,8 @@ namespace
 			}
 			else
 			{
-				std::filesystem::copy(source_path.ToString(),
-									  destination_path.ToString(),
+				std::filesystem::copy(ToWindowsLongPathString(source_path),
+									  ToWindowsLongPathString(destination_path),
 									  options);
 			}
 
@@ -122,8 +145,8 @@ namespace
 			}
 			else
 			{
-				std::filesystem::copy(source_path.ToString(),
-									  destination_path.ToString(),
+				std::filesystem::copy(ToWindowsLongPathString(source_path),
+									  ToWindowsLongPathString(destination_path),
 									  options);
 			}
 
@@ -149,8 +172,8 @@ namespace
 		}
 		else
 		{
-			std::filesystem::copy(source_path.ToString(),
-								  destination_path.ToString(),
+			std::filesystem::copy(ToWindowsLongPathString(source_path),
+								  ToWindowsLongPathString(destination_path),
 								  options);
 		}
 
@@ -669,9 +692,9 @@ void base::filesystem::Copy(base::Path const &source_path,
 	EnsureDirectory(destination_path);
 
 	// 开始递归复制
-	for (auto entry : std::filesystem::recursive_directory_iterator{source_path.ToString()})
+	for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
 	{
-		base::Path relative_path{entry.path().string()};
+		base::Path relative_path{WindowsLongPathStringToPath(entry.path().string())};
 		relative_path.RemoveBasePath(source_path);
 
 		base::Path src_path = source_path + relative_path;
