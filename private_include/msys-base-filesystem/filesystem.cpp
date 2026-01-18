@@ -176,18 +176,6 @@ bool base::filesystem::Exists(base::Path const &path)
 	return ret;
 }
 
-bool base::filesystem::SymbolicLinkExists(base::Path const &path)
-{
-	DWORD dwAttrib = GetFileAttributesA(path.ToString().c_str());
-
-	if (dwAttrib != INVALID_FILE_ATTRIBUTES)
-	{
-		return true;
-	}
-
-	return false;
-}
-
 base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_obj_path)
 {
 	HANDLE h = CreateFileA(ToWindowsLongPathString(symbolic_link_obj_path).c_str(),
