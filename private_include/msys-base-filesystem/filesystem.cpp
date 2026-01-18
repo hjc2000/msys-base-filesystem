@@ -599,11 +599,12 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 }
 
 void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_path,
-										  base::Path const &link_to_path)
+										  base::Path const &link_to_path,
+										  bool is_directory)
 {
 	DWORD flags = 0;
 
-	if (base::filesystem::IsDirectory(link_to_path))
+	if (flags)
 	{
 		flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
 	}
