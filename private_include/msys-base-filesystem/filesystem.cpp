@@ -445,12 +445,15 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		throw std::runtime_error{"GetFinalPathNameByHandleA failed"};
 	}
 
-	std::string result(buffer);
+	std::string result{buffer};
 
 	// 去掉 \\?\ 前缀
 	std::string const prefix = "\\\\?\\";
+
 	if (result.rfind(prefix, 0) == 0)
+	{
 		result.erase(0, prefix.size());
+	}
 
 	return result;
 }
