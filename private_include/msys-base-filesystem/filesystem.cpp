@@ -669,7 +669,7 @@ void base::filesystem::Copy(base::Path const &source_path,
 	EnsureDirectory(destination_path);
 
 	// 开始递归复制
-	for (auto entry : std::filesystem::recursive_directory_iterator(source_path.ToString()))
+	for (auto entry : std::filesystem::recursive_directory_iterator{source_path.ToString()})
 	{
 		base::Path relative_path{entry.path().string()};
 		relative_path.RemoveBasePath(source_path);
