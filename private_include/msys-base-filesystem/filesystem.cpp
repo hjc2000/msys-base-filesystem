@@ -3,6 +3,7 @@
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
 #include "base/string/String.h"
+#include "msys-base-filesystem/DirectoryEntryEnumerator.h"
 #include "msys-base-filesystem/HandleGuard.h"
 #include "msys-base-filesystem/REPARSE_DATA_BUFFER.h"
 #include <cstddef>
@@ -132,72 +133,6 @@ namespace
 	}
 
 	/* #region 目录条目迭代器 */
-
-	///
-	/// @brief 目录条目迭代器。
-	///
-	///
-	class DirectoryEntryEnumerator :
-		public base::IEnumerator<base::filesystem::DirectoryEntry const>
-	{
-	private:
-		base::filesystem::DirectoryEntry _current;
-		std::filesystem::directory_iterator _current_it;
-		std::filesystem::directory_iterator _end_it;
-		base::IEnumerator<base::filesystem::DirectoryEntry const>::Context_t _context{};
-
-	public:
-		DirectoryEntryEnumerator(base::Path const &path)
-		{
-			std::string path_str = path.ToString();
-			if (path_str == "")
-			{
-				path_str = "./";
-			}
-
-			_current_it = std::filesystem::directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
-		}
-
-		///
-		/// @brief 迭代器当前是否指向尾后元素。
-		///
-		/// @return
-		///
-		virtual bool IsEnd() const override
-		{
-			return _current_it == _end_it;
-		}
-
-		///
-		/// @brief 获取当前值的引用。
-		///
-		/// @return ItemType&
-		///
-		virtual base::filesystem::DirectoryEntry const &CurrentValue() override
-		{
-			_current = base::filesystem::DirectoryEntry{base::filesystem::WindowsLongPathStringToPath(_current_it->path().string())};
-			return _current;
-		}
-
-		///
-		/// @brief 递增迭代器的位置。
-		///
-		///
-		virtual void Add() override
-		{
-			++_current_it;
-		}
-
-		///
-		/// @brief 派生类需要提供一个该对象。
-		///
-		/// @return
-		///
-		virtual base::IEnumerator<base::filesystem::DirectoryEntry const>::Context_t &Context() override
-		{
-			return _context;
-		}
-	};
 
 	///
 	/// @brief 目录条目递归迭代器。
@@ -802,7 +737,7 @@ void base::filesystem::Move(base::Path const &source_path,
 
 std::shared_ptr<base::IEnumerator<base::filesystem::DirectoryEntry const>> base::filesystem::CreateDirectoryEntryEnumerator(base::Path const &path)
 {
-	return std::shared_ptr<DirectoryEntryEnumerator>{new DirectoryEntryEnumerator{path}};
+	return std::shared_ptr<msys::DirectoryEntryEnumerator>{new msys::DirectoryEntryEnumerator{path}};
 }
 
 std::shared_ptr<base::IEnumerator<base::filesystem::DirectoryEntry const>> base::filesystem::CreateDirectoryEntryRecursiveEnumerator(base::Path const &path)
