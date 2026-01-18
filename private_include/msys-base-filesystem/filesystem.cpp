@@ -37,6 +37,15 @@ namespace
 		}
 	};
 
+	std::string ToWindowsLongPathString(base::Path const &path)
+	{
+		base::Path absolute_path = base::filesystem::ToAbsolutePath(path);
+		base::String absolute_path_string = absolute_path.ToString();
+		absolute_path_string.Replace("/", "\\");
+		absolute_path_string = "\\\\?\\" + absolute_path_string;
+		return absolute_path_string.StdString();
+	}
+
 	///
 	/// @brief 拷贝单个文件。
 	///
