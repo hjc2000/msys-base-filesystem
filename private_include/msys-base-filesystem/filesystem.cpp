@@ -349,12 +349,13 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 	}
 
 	FILE_ATTRIBUTE_TAG_INFO info;
-	bool result = false;
 
 	WINBOOL call_result = GetFileInformationByHandleEx(h,
 													   FileAttributeTagInfo,
 													   &info,
 													   sizeof(info));
+
+	bool result = false;
 
 	if (call_result)
 	{
