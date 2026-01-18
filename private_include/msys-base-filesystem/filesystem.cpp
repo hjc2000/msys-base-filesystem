@@ -1,7 +1,6 @@
 #include "base/filesystem/filesystem.h"
 #include "base/container/iterator/IEnumerator.h"
 #include "base/filesystem/Path.h"
-#include "base/Guard.h"
 #include "base/string/define.h"
 #include <filesystem>
 #include <iostream>
@@ -110,6 +109,7 @@ namespace
 		// 如果更新则覆盖
 		std::filesystem::directory_entry src_entry{source_path.ToString()};
 		std::filesystem::directory_entry dst_entry{destination_path.ToString()};
+
 		if (src_entry.last_write_time() <= dst_entry.last_write_time())
 		{
 			std::cout << "不更新：" << source_path << " --> " << destination_path << std::endl;
