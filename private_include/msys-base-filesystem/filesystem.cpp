@@ -334,26 +334,6 @@ bool base::filesystem::IsRegularFile(base::Path const &path)
 
 bool base::filesystem::IsSymbolicLink(base::Path const &path)
 {
-	{
-		// 这是基于标准库的实现，在 msys2 中不可用。
-
-		// std::error_code error_code{};
-		// bool ret = std::filesystem::is_symlink(path.ToString(), error_code);
-
-		// if (error_code.value() != 0)
-		// {
-		// 	std::string message = CODE_POS_STR;
-
-		// 	message += std::format("错误代码：{}，错误消息：{}",
-		// 						   error_code.value(),
-		// 						   error_code.message());
-
-		// 	throw std::runtime_error{message};
-		// }
-
-		// return ret;
-	}
-
 	HANDLE h = CreateFileA(path.ToString().c_str(),
 						   0,
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -387,6 +367,26 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 	}
 
 	return false;
+
+	{
+		// 这是基于标准库的实现，在 msys2 中不可用。
+
+		// std::error_code error_code{};
+		// bool ret = std::filesystem::is_symlink(path.ToString(), error_code);
+
+		// if (error_code.value() != 0)
+		// {
+		// 	std::string message = CODE_POS_STR;
+
+		// 	message += std::format("错误代码：{}，错误消息：{}",
+		// 						   error_code.value(),
+		// 						   error_code.message());
+
+		// 	throw std::runtime_error{message};
+		// }
+
+		// return ret;
+	}
 }
 
 /* #endregion */
@@ -419,29 +419,6 @@ bool base::filesystem::Exists(base::Path const &path)
 
 base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_obj_path)
 {
-	{
-		// if (!base::filesystem::IsSymbolicLink(symbolic_link_obj_path))
-		// {
-		// 	throw std::runtime_error{CODE_POS_STR + "传进来的路径必须是一个符号链接的路径。"};
-		// }
-
-		// std::error_code error_code{};
-		// std::filesystem::path target_path = std::filesystem::read_symlink(symbolic_link_obj_path.ToString(), error_code);
-
-		// if (error_code.value() != 0)
-		// {
-		// 	std::string message = CODE_POS_STR;
-
-		// 	message += std::format("读取符号链接失败。错误代码：{}，错误消息：{}",
-		// 						   error_code.value(),
-		// 						   error_code.message());
-
-		// 	throw std::runtime_error{message};
-		// }
-
-		// return target_path.string();
-	}
-
 	HANDLE h = CreateFileA(symbolic_link_obj_path.ToString().c_str(),
 						   0,
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -480,11 +457,52 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 	}
 
 	return result;
+
+	{
+		// if (!base::filesystem::IsSymbolicLink(symbolic_link_obj_path))
+		// {
+		// 	throw std::runtime_error{CODE_POS_STR + "传进来的路径必须是一个符号链接的路径。"};
+		// }
+
+		// std::error_code error_code{};
+		// std::filesystem::path target_path = std::filesystem::read_symlink(symbolic_link_obj_path.ToString(), error_code);
+
+		// if (error_code.value() != 0)
+		// {
+		// 	std::string message = CODE_POS_STR;
+
+		// 	message += std::format("读取符号链接失败。错误代码：{}，错误消息：{}",
+		// 						   error_code.value(),
+		// 						   error_code.message());
+
+		// 	throw std::runtime_error{message};
+		// }
+
+		// return target_path.string();
+	}
 }
 
 void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_path,
 										  base::Path const &link_to_path)
 {
+	DWORD flags = 0;
+
+	if (base::filesystem::IsDirectory(link_to_path))
+	{
+		flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
+	}
+
+	flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
+
+	bool call_result = CreateSymbolicLinkA(symbolic_link_obj_path.ToString().c_str(),
+										   link_to_path.ToString().c_str(),
+										   flags);
+
+	if (!call_result)
+	{
+		throw std::runtime_error{CODE_POS_STR + "创建符号链接失败。"};
+	}
+
 	{
 		// std::error_code error_code{};
 
@@ -502,24 +520,6 @@ void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_pa
 
 		// 	throw std::runtime_error{message};
 		// }
-	}
-
-	DWORD flags = 0;
-
-	if (base::filesystem::IsDirectory(link_to_path))
-	{
-		flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
-	}
-
-	flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
-
-	bool call_result = CreateSymbolicLinkA(symbolic_link_obj_path.ToString().c_str(),
-										   link_to_path.ToString().c_str(),
-										   flags);
-
-	if (!call_result)
-	{
-		throw std::runtime_error{CODE_POS_STR + "创建符号链接失败。"};
 	}
 }
 
