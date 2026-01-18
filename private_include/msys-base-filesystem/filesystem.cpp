@@ -438,21 +438,32 @@ bool base::filesystem::IsExcuteable(base::Path const &path)
 
 bool base::filesystem::IsDirectory(base::Path const &path)
 {
-	std::error_code error_code{};
-	bool ret = std::filesystem::is_directory(ToWindowsLongPathString(path), error_code);
-
-	if (error_code.value() != 0)
+	try
 	{
-		std::string message = CODE_POS_STR;
+		std::error_code error_code{};
+		bool ret = std::filesystem::is_directory(ToWindowsLongPathString(path), error_code);
 
-		message += std::format("错误代码：{}，错误消息：{}",
-							   error_code.value(),
-							   error_code.message());
+		if (error_code.value() != 0)
+		{
+			std::string message = CODE_POS_STR;
 
-		throw std::runtime_error{message};
+			message += std::format("错误代码：{}，错误消息：{}",
+								   error_code.value(),
+								   error_code.message());
+
+			throw std::runtime_error{message};
+		}
+
+		return ret;
 	}
-
-	return ret;
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+	}
 }
 
 bool base::filesystem::IsRegularFile(base::Path const &path)
