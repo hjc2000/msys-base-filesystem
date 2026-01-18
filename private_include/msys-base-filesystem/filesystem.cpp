@@ -830,47 +830,59 @@ void base::filesystem::Copy(base::Path const &source_path,
 							base::Path const &destination_path,
 							base::filesystem::OverwriteOption overwrite_method)
 {
-	if (!base::filesystem::Exists(source_path))
+	try
 	{
-		std::string message = CODE_POS_STR;
-		message += std::format("源路径 {} 不存在。", source_path.ToString());
-		throw std::runtime_error{message};
-	}
-
-	if (destination_path.IsRootPath())
-	{
-		throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
-	}
-
-	// 执行到这里说明源路径存在
-	if (base::filesystem::IsFile(source_path))
-	{
-		CopySingleFile(source_path, destination_path, overwrite_method);
-		return;
-	}
-
-	// 执行到这里说明源路径是目录
-	EnsureDirectory(destination_path);
-
-	// 开始递归复制
-	for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
-	{
-		base::Path relative_path{WindowsLongPathStringToPath(entry.path().string())};
-		relative_path.RemoveBasePath(source_path);
-
-		base::Path src_path = source_path + relative_path;
-		base::Path dst_path = destination_path + relative_path;
-
-		if (IsFile(src_path))
+		if (!base::filesystem::Exists(source_path))
 		{
-			// 源路径是一个文件
-			CopySingleFile(src_path, dst_path, overwrite_method);
+			std::string message = CODE_POS_STR;
+			message += std::format("源路径 {} 不存在。", source_path.ToString());
+			throw std::runtime_error{message};
 		}
-		else
+
+		if (destination_path.IsRootPath())
 		{
-			// 源路径是一个目录
-			EnsureDirectory(dst_path);
+			throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
 		}
+
+		// 执行到这里说明源路径存在
+		if (base::filesystem::IsSymbolicLink(source_path) ||
+			base::filesystem::IsFile(source_path))
+		{
+			CopySingleFile(source_path, destination_path, overwrite_method);
+			return;
+		}
+
+		// 执行到这里说明源路径是目录
+		EnsureDirectory(destination_path);
+
+		// 开始递归复制
+		for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
+		{
+			base::Path relative_path{WindowsLongPathStringToPath(entry.path().string())};
+			relative_path.RemoveBasePath(source_path);
+
+			base::Path src_path = source_path + relative_path;
+			base::Path dst_path = destination_path + relative_path;
+
+			if (IsFile(src_path))
+			{
+				// 源路径是一个文件
+				CopySingleFile(src_path, dst_path, overwrite_method);
+			}
+			else
+			{
+				// 源路径是一个目录
+				EnsureDirectory(dst_path);
+			}
+		}
+	}
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
 	}
 }
 
