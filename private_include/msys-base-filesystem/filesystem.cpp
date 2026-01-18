@@ -197,40 +197,70 @@ namespace
 			throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
 		}
 
-		std::filesystem::copy_options options = std::filesystem::copy_options::copy_symlinks;
-
-		if (!base::filesystem::Exists(destination_path))
+		try
 		{
-			// 目标路径不存在，直接复制。
-			base::filesystem::EnsureDirectory(destination_path.ParentPath());
+			std::filesystem::copy_options options = std::filesystem::copy_options::copy_symlinks;
 
-			// 拷贝单个文件。
-			// 没有进行检查，调用者必须确保源路径是一个文件。
-			if (base::filesystem::IsSymbolicLink(source_path))
+			if (!base::filesystem::Exists(destination_path))
 			{
-				base::filesystem::CreateSymboliclink(destination_path,
-													 base::filesystem::ReadSymboliclink(source_path),
-													 IsSymbolicLinkDirectory(source_path.ToString()));
+				// 目标路径不存在，直接复制。
+				base::filesystem::EnsureDirectory(destination_path.ParentPath());
+
+				// 拷贝单个文件。
+				// 没有进行检查，调用者必须确保源路径是一个文件。
+				if (base::filesystem::IsSymbolicLink(source_path))
+				{
+					base::filesystem::CreateSymboliclink(destination_path,
+														 base::filesystem::ReadSymboliclink(source_path),
+														 IsSymbolicLinkDirectory(source_path.ToString()));
+				}
+				else
+				{
+					std::filesystem::copy(ToWindowsLongPathString(source_path),
+										  ToWindowsLongPathString(destination_path),
+										  options);
+				}
+
+				return;
 			}
-			else
+
+			// 目标路径存在
+			if (overwrite_method == base::filesystem::OverwriteOption::Skip)
 			{
-				std::filesystem::copy(ToWindowsLongPathString(source_path),
-									  ToWindowsLongPathString(destination_path),
-									  options);
+				return;
 			}
 
-			return;
-		}
+			if (overwrite_method == base::filesystem::OverwriteOption::Overwrite)
+			{
+				// 无条件覆盖。
+				base::filesystem::Remove(destination_path);
 
-		// 目标路径存在
-		if (overwrite_method == base::filesystem::OverwriteOption::Skip)
-		{
-			return;
-		}
+				if (base::filesystem::IsSymbolicLink(source_path))
+				{
+					base::filesystem::CreateSymboliclink(destination_path,
+														 base::filesystem::ReadSymboliclink(source_path),
+														 IsSymbolicLinkDirectory(source_path.ToString()));
+				}
+				else
+				{
+					std::filesystem::copy(ToWindowsLongPathString(source_path),
+										  ToWindowsLongPathString(destination_path),
+										  options);
+				}
 
-		if (overwrite_method == base::filesystem::OverwriteOption::Overwrite)
-		{
-			// 无条件覆盖。
+				return;
+			}
+
+			// 如果更新则覆盖
+			std::filesystem::directory_entry src_entry{ToWindowsLongPathString(source_path)};
+			std::filesystem::directory_entry dst_entry{ToWindowsLongPathString(destination_path)};
+
+			if (src_entry.last_write_time() <= dst_entry.last_write_time())
+			{
+				return;
+			}
+
+			// 需要更新
 			base::filesystem::Remove(destination_path);
 
 			if (base::filesystem::IsSymbolicLink(source_path))
@@ -248,33 +278,14 @@ namespace
 
 			return;
 		}
-
-		// 如果更新则覆盖
-		std::filesystem::directory_entry src_entry{ToWindowsLongPathString(source_path)};
-		std::filesystem::directory_entry dst_entry{ToWindowsLongPathString(destination_path)};
-
-		if (src_entry.last_write_time() <= dst_entry.last_write_time())
+		catch (std::exception const &e)
 		{
-			return;
+			throw std::runtime_error{CODE_POS_STR + e.what()};
 		}
-
-		// 需要更新
-		base::filesystem::Remove(destination_path);
-
-		if (base::filesystem::IsSymbolicLink(source_path))
+		catch (...)
 		{
-			base::filesystem::CreateSymboliclink(destination_path,
-												 base::filesystem::ReadSymboliclink(source_path),
-												 IsSymbolicLinkDirectory(source_path.ToString()));
+			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
 		}
-		else
-		{
-			std::filesystem::copy(ToWindowsLongPathString(source_path),
-								  ToWindowsLongPathString(destination_path),
-								  options);
-		}
-
-		return;
 	}
 
 	/* #region 目录条目迭代器 */
