@@ -159,6 +159,9 @@ base::Path base::filesystem::CurrentPath()
 
 bool base::filesystem::Exists(base::Path const &path)
 {
+	// 经过测试，std::filesystem::exists 函数对于符号链接，返回值指示的
+	// 是符号链接文件本身是否存在，而不是符号链接指向的目标是否存在。
+
 	std::error_code error_code{};
 	bool ret = std::filesystem::exists(ToWindowsLongPathString(path), error_code);
 
