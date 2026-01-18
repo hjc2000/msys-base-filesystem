@@ -575,35 +575,42 @@ void base::filesystem::Copy(base::Path const &source_path,
 			return;
 		}
 
-		if (!base::filesystem::IsDirectory(source_path))
+		if (base::filesystem::IsRegularFile(source_path))
 		{
 			CopySingleFile(source_path, destination_path, overwrite_method);
 			return;
 		}
 
-		// 执行到这里说明源路径是目录
-		EnsureDirectory(destination_path);
-
-		// 开始递归复制
-		for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
+		if (base::filesystem::IsDirectory(source_path))
 		{
-			base::Path relative_path{base::filesystem::WindowsLongPathStringToPath(entry.path().string())};
-			relative_path.RemoveBasePath(base::filesystem::ToAbsolutePath(source_path));
+			// 执行到这里说明源路径是目录
+			EnsureDirectory(destination_path);
 
-			base::Path src_path = source_path + relative_path;
-			base::Path dst_path = destination_path + relative_path;
+			// 开始递归复制
+			for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
+			{
+				base::Path relative_path{base::filesystem::WindowsLongPathStringToPath(entry.path().string())};
+				relative_path.RemoveBasePath(base::filesystem::ToAbsolutePath(source_path));
 
-			if (IsDirectory(src_path))
-			{
-				// 源路径是一个目录
-				EnsureDirectory(dst_path);
+				base::Path src_path = source_path + relative_path;
+				base::Path dst_path = destination_path + relative_path;
+
+				if (IsDirectory(src_path))
+				{
+					// 源路径是一个目录
+					EnsureDirectory(dst_path);
+				}
+				else
+				{
+					// 源路径是一个文件
+					CopySingleFile(src_path, dst_path, overwrite_method);
+				}
 			}
-			else
-			{
-				// 源路径是一个文件
-				CopySingleFile(src_path, dst_path, overwrite_method);
-			}
+
+			return;
 		}
+
+		throw std::runtime_error{CODE_POS_STR + source_path.ToString() + " 是未知的目录条目类型。"};
 	}
 	catch (std::exception const &e)
 	{
