@@ -7,7 +7,6 @@
 #include "base/string/String.h"
 #include <cstdint>
 #include <filesystem>
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -72,7 +71,6 @@ namespace
 		{
 			// 目标路径不存在，直接复制。
 			base::filesystem::EnsureDirectory(destination_path.ParentPath());
-			std::cout << "复制：" << source_path << " --> " << destination_path << std::endl;
 
 			// 拷贝单个文件。
 			// 没有进行检查，调用者必须确保源路径是一个文件。
@@ -94,7 +92,6 @@ namespace
 		// 目标路径存在
 		if (overwrite_method == base::filesystem::OverwriteOption::Skip)
 		{
-			std::cout << "跳过：" << source_path << " --> " << destination_path << std::endl;
 			return;
 		}
 
@@ -115,7 +112,6 @@ namespace
 									  options);
 			}
 
-			std::cout << "覆盖：" << source_path << " --> " << destination_path << std::endl;
 			return;
 		}
 
@@ -125,7 +121,6 @@ namespace
 
 		if (src_entry.last_write_time() <= dst_entry.last_write_time())
 		{
-			std::cout << "不更新：" << source_path << " --> " << destination_path << std::endl;
 			return;
 		}
 
@@ -144,7 +139,6 @@ namespace
 								  options);
 		}
 
-		std::cout << "更新：" << source_path << " --> " << destination_path << std::endl;
 		return;
 	}
 
@@ -772,7 +766,6 @@ void base::filesystem::Move(base::Path const &source_path,
 
 	if (src_entry.last_write_time() <= dst_entry.last_write_time())
 	{
-		std::cout << "不更新：" << source_path << " --> " << destination_path << std::endl;
 		return;
 	}
 
@@ -795,7 +788,6 @@ void base::filesystem::Move(base::Path const &source_path,
 		throw std::runtime_error{message};
 	}
 
-	std::cout << "更新：" << source_path << " --> " << destination_path << std::endl;
 	return;
 }
 
