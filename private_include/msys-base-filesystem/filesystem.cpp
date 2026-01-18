@@ -350,16 +350,22 @@ void base::filesystem::CreateDirectoryRecursively(base::Path const &path)
 
 void base::filesystem::Remove(base::Path const &path)
 {
-	if (!Exists(path))
+	if (!base::filesystem::Exists(path))
 	{
 		// 路径不存在，直接返回。
+		return;
+	}
+
+	if (base::filesystem::IsSymbolicLink(path))
+	{
+		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path));
 		return;
 	}
 
 	std::error_code error_code{};
 
 	// 返回值是 uintmax_t ，含义是递归删除的项目总数。
-	auto removed_count = std::filesystem::remove_all(ToWindowsLongPathString(path),
+	auto removed_count = std::filesystem::remove_all(base::filesystem::ToWindowsLongPathString(path),
 													 error_code);
 
 	if (error_code.value() != 0)
