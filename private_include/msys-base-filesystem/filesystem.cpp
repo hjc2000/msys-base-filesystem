@@ -72,69 +72,6 @@ namespace
 		}
 	};
 
-	///
-	/// @brief 检查符号链接文件本身的属性中是不是指示该符号链接应该链接一个目录。
-	///
-	/// @note windows 的傻逼设计，符号链接分成 2 种类型，不兼容的，一种是文件的
-	/// 符号链接，一种是目录的符号链接。
-	///
-	/// @param path
-	/// @return
-	///
-	bool IsSymbolicLinkDirectory(std::string const &path)
-	{
-		// 打开符号链接本身，而不是目标
-		HANDLE h = CreateFileA(path.c_str(),
-							   0, // 不需要访问权限，只读属性
-							   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-							   nullptr,
-							   OPEN_EXISTING,
-							   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
-							   nullptr);
-
-		HandleGuard g{h};
-
-		if (h == INVALID_HANDLE_VALUE)
-		{
-			// 打开失败，可能不是符号链接
-			return false;
-		}
-
-		int64_t buffer_size = 1024 * 32;
-		std::unique_ptr<uint8_t[]> buffer{new uint8_t[buffer_size]};
-
-		DWORD bytesReturned = 0;
-
-		BOOL result = DeviceIoControl(h,
-									  FSCTL_GET_REPARSE_POINT,
-									  nullptr,
-									  0,
-									  buffer.get(),
-									  buffer_size,
-									  &bytesReturned,
-									  nullptr);
-
-		if (!result)
-		{
-			return false; // 获取 reparse data 失败
-		}
-
-		REPARSE_DATA_BUFFER *rdb = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer.get());
-
-		if (rdb->ReparseTag != IO_REPARSE_TAG_SYMLINK)
-		{
-			// 不是符号链接
-			return false;
-		}
-
-		if ((rdb->SymbolicLinkReparseBuffer.Flags & SYMBOLIC_LINK_FLAG_DIRECTORY) != 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	std::string ToWindowsLongPathString(base::Path const &path)
 	{
 		try
@@ -216,7 +153,7 @@ namespace
 				{
 					base::filesystem::CreateSymboliclink(destination_path,
 														 base::filesystem::ReadSymboliclink(source_path),
-														 IsSymbolicLinkDirectory(source_path.ToString()));
+														 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
 				}
 				else
 				{
@@ -243,7 +180,7 @@ namespace
 				{
 					base::filesystem::CreateSymboliclink(destination_path,
 														 base::filesystem::ReadSymboliclink(source_path),
-														 IsSymbolicLinkDirectory(source_path.ToString()));
+														 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
 				}
 				else
 				{
@@ -271,7 +208,7 @@ namespace
 			{
 				base::filesystem::CreateSymboliclink(destination_path,
 													 base::filesystem::ReadSymboliclink(source_path),
-													 IsSymbolicLinkDirectory(source_path.ToString()));
+													 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
 			}
 			else
 			{
@@ -555,6 +492,31 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 
 		// return ret;
 	}
+}
+
+///
+/// @brief 检查符号链接文件本身的属性中是不是指示该符号链接应该链接一个目录。
+///
+/// @note windows 的傻逼设计，符号链接分成 2 种类型，不兼容的，一种是文件的
+/// 符号链接，一种是目录的符号链接。
+///
+/// @param path
+/// @return
+///
+bool base::filesystem::IsSymbolicLinkDirectory(base::Path const &path)
+{
+	DWORD attrs = GetFileAttributesA(path.ToString().c_str());
+
+	if (attrs == INVALID_FILE_ATTRIBUTES)
+	{
+		return false;
+	}
+
+	// 是符号链接并且是目录
+	bool ret = (attrs & FILE_ATTRIBUTE_REPARSE_POINT) &&
+			   (attrs & FILE_ATTRIBUTE_DIRECTORY);
+
+	return ret;
 }
 
 /* #endregion */
