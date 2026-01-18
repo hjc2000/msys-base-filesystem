@@ -22,52 +22,6 @@
 
 namespace
 {
-	std::string ToWindowsLongPathString(base::Path const &path)
-	{
-		try
-		{
-			base::Path absolute_path = base::filesystem::ToAbsolutePath(path);
-			base::String absolute_path_string = absolute_path.ToString();
-			absolute_path_string.Replace("/", "\\");
-			absolute_path_string = "\\\\?\\" + absolute_path_string;
-			return absolute_path_string.StdString();
-		}
-		catch (std::exception const &e)
-		{
-			throw std::runtime_error{CODE_POS_STR + e.what()};
-		}
-		catch (...)
-		{
-			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
-		}
-	}
-
-	base::Path WindowsLongPathStringToPath(std::string const &path_string)
-	{
-		try
-		{
-			base::String result{path_string};
-
-			// 去掉 \\?\ 前缀
-			base::String prefix = "\\\\?\\";
-
-			if (result.StartWith(prefix))
-			{
-				result.Remove(base::Range{0, prefix.Length()});
-			}
-
-			return result;
-		}
-		catch (std::exception const &e)
-		{
-			throw std::runtime_error{CODE_POS_STR + e.what()};
-		}
-		catch (...)
-		{
-			throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
-		}
-	}
-
 	///
 	/// @brief 拷贝单个文件。
 	///
@@ -107,8 +61,8 @@ namespace
 				}
 				else
 				{
-					std::filesystem::copy(ToWindowsLongPathString(source_path),
-										  ToWindowsLongPathString(destination_path),
+					std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
+										  base::filesystem::ToWindowsLongPathString(destination_path),
 										  options);
 				}
 
@@ -134,8 +88,8 @@ namespace
 				}
 				else
 				{
-					std::filesystem::copy(ToWindowsLongPathString(source_path),
-										  ToWindowsLongPathString(destination_path),
+					std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
+										  base::filesystem::ToWindowsLongPathString(destination_path),
 										  options);
 				}
 
@@ -143,8 +97,8 @@ namespace
 			}
 
 			// 如果更新则覆盖
-			std::filesystem::directory_entry src_entry{ToWindowsLongPathString(source_path)};
-			std::filesystem::directory_entry dst_entry{ToWindowsLongPathString(destination_path)};
+			std::filesystem::directory_entry src_entry{base::filesystem::ToWindowsLongPathString(source_path)};
+			std::filesystem::directory_entry dst_entry{base::filesystem::ToWindowsLongPathString(destination_path)};
 
 			if (src_entry.last_write_time() <= dst_entry.last_write_time())
 			{
@@ -162,8 +116,8 @@ namespace
 			}
 			else
 			{
-				std::filesystem::copy(ToWindowsLongPathString(source_path),
-									  ToWindowsLongPathString(destination_path),
+				std::filesystem::copy(base::filesystem::ToWindowsLongPathString(source_path),
+									  base::filesystem::ToWindowsLongPathString(destination_path),
 									  options);
 			}
 
@@ -203,7 +157,7 @@ namespace
 				path_str = "./";
 			}
 
-			_current_it = std::filesystem::directory_iterator{ToWindowsLongPathString(path_str)};
+			_current_it = std::filesystem::directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
 		}
 
 		///
@@ -223,7 +177,7 @@ namespace
 		///
 		virtual base::filesystem::DirectoryEntry const &CurrentValue() override
 		{
-			_current = base::filesystem::DirectoryEntry{WindowsLongPathStringToPath(_current_it->path().string())};
+			_current = base::filesystem::DirectoryEntry{base::filesystem::WindowsLongPathStringToPath(_current_it->path().string())};
 			return _current;
 		}
 
@@ -269,7 +223,7 @@ namespace
 				path_str = "./";
 			}
 
-			_current_it = std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(path_str)};
+			_current_it = std::filesystem::recursive_directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
 		}
 
 		///
@@ -289,7 +243,7 @@ namespace
 		///
 		virtual base::filesystem::DirectoryEntry const &CurrentValue() override
 		{
-			_current = base::filesystem::DirectoryEntry{WindowsLongPathStringToPath(_current_it->path().string())};
+			_current = base::filesystem::DirectoryEntry{base::filesystem::WindowsLongPathStringToPath(_current_it->path().string())};
 			return _current;
 		}
 
