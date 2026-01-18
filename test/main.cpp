@@ -4,7 +4,7 @@
 
 int main()
 {
-	base::Path path = "C:/Users/huang/disk/ti600_2TB/.temp/link";
+	base::Path path = "C:/Users/huang/disk/ti600_2TB/cpp-lib-build-scripts/msys-clang/.repos/base-copy";
 	base::filesystem::Remove(path);
 
 	return 0;
