@@ -403,7 +403,7 @@ bool base::filesystem::IsSymbolicLinkDirectory(base::Path const &path)
 base::Path base::filesystem::CurrentPath()
 {
 	auto path = std::filesystem::current_path();
-	base::Path ret{WindowsLongPathStringToPath(path.string())};
+	base::Path ret{base::filesystem::WindowsLongPathStringToPath(path.string())};
 	return ret;
 }
 
@@ -499,9 +499,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		static_cast<size_t>(utf8Len), // 使用转换后的长度
 	};
 
-	std::cout << CODE_POS_STR << result << std::endl;
-
-	return WindowsLongPathStringToPath(result);
+	return base::filesystem::WindowsLongPathStringToPath(result);
 }
 
 void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_path,
@@ -664,7 +662,7 @@ void base::filesystem::Copy(base::Path const &source_path,
 		// 开始递归复制
 		for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
 		{
-			base::Path relative_path{WindowsLongPathStringToPath(entry.path().string())};
+			base::Path relative_path{base::filesystem::WindowsLongPathStringToPath(entry.path().string())};
 			relative_path.RemoveBasePath(source_path);
 
 			base::Path src_path = source_path + relative_path;
