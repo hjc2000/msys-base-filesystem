@@ -2,6 +2,8 @@
 #include "base/container/iterator/IEnumerator.h"
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -434,19 +436,23 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		throw std::runtime_error{CODE_POS_STR + "CreateFileA 调用失败，无法打开符号链接文件。"};
 	}
 
-	char buffer[MAX_PATH];
+	int64_t buffer_size = 1024 * 16;
+	std::unique_ptr<uint8_t[]> buffer{new uint8_t[buffer_size]};
 
 	DWORD len = GetFinalPathNameByHandleA(h,
-										  buffer,
-										  MAX_PATH,
+										  reinterpret_cast<char *>(buffer.get()),
+										  buffer_size,
 										  FILE_NAME_NORMALIZED);
 
-	if (len == 0 || len >= MAX_PATH)
+	if (len == 0 || len >= buffer_size)
 	{
 		throw std::runtime_error{CODE_POS_STR + "读取符号链接失败。"};
 	}
 
-	std::string result{buffer};
+	std::string result{
+		reinterpret_cast<char *>(buffer.get()),
+		static_cast<size_t>(len),
+	};
 
 	// 去掉 \\?\ 前缀
 	std::string const prefix = "\\\\?\\";
