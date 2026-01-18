@@ -4,6 +4,7 @@
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
 #include "base/string/String.h"
+#include "msys-base-filesystem/HandleGuard.h"
 #include "msys-base-filesystem/REPARSE_DATA_BUFFER.h"
 #include <cstddef>
 #include <cstdint>
@@ -21,24 +22,6 @@
 
 namespace
 {
-	class HandleGuard
-	{
-	private:
-		HANDLE _handle = INVALID_HANDLE_VALUE;
-
-	public:
-		HandleGuard(HANDLE handle)
-			: _handle{handle}
-		{
-		}
-
-		~HandleGuard()
-		{
-			CloseHandle(_handle);
-			_handle = INVALID_HANDLE_VALUE;
-		}
-	};
-
 	std::string ToWindowsLongPathString(base::Path const &path)
 	{
 		try
@@ -414,7 +397,7 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
-	HandleGuard g{h};
+	msys::HandleGuard g{h};
 
 	if (h == INVALID_HANDLE_VALUE)
 	{
@@ -520,7 +503,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
-	HandleGuard g{h};
+	msys::HandleGuard g{h};
 
 	if (h == INVALID_HANDLE_VALUE)
 	{
