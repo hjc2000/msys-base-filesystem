@@ -378,7 +378,7 @@ void base::filesystem::Remove(base::Path const &path)
 
 /* #endregion */
 
-/* #region Copy */
+/* #region 拷贝 */
 
 void base::filesystem::CopySymbolicLink(base::Path const &source_path,
 										base::Path const &destination_path,
