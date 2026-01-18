@@ -154,8 +154,8 @@ namespace
 		}
 
 		// 如果更新则覆盖
-		std::filesystem::directory_entry src_entry{source_path.ToString()};
-		std::filesystem::directory_entry dst_entry{destination_path.ToString()};
+		std::filesystem::directory_entry src_entry{ToWindowsLongPathString(source_path)};
+		std::filesystem::directory_entry dst_entry{ToWindowsLongPathString(destination_path)};
 
 		if (src_entry.last_write_time() <= dst_entry.last_write_time())
 		{
