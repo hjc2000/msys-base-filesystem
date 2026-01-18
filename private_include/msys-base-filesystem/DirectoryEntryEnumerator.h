@@ -12,7 +12,6 @@ namespace msys
 	///
 	/// @brief 目录条目迭代器。
 	///
-	///
 	class DirectoryEntryEnumerator :
 		public base::IEnumerator<base::filesystem::DirectoryEntry const>
 	{
