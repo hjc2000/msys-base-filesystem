@@ -323,7 +323,7 @@ bool base::filesystem::IsDirectory(base::Path const &path)
 bool base::filesystem::IsRegularFile(base::Path const &path)
 {
 	std::error_code error_code{};
-	bool ret = std::filesystem::is_regular_file(path.ToString(), error_code);
+	bool ret = std::filesystem::is_regular_file(ToWindowsLongPathString(path), error_code);
 
 	if (error_code.value() != 0)
 	{
