@@ -370,8 +370,9 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (error_code.value() != 0)
 	{
-		std::string message = std::format("{} 删除失败。错误代码：{}，错误消息：{}",
+		std::string message = std::format("{} 删除 {} 失败。错误代码：{}，错误消息：{}",
 										  CODE_POS_STR,
+										  path.ToString(),
 										  error_code.value(),
 										  error_code.message());
 
