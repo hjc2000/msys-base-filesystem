@@ -358,32 +358,71 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (base::filesystem::IsSymbolicLink(path))
 	{
-		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path));
+		std::error_code error_code{};
+		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path), error_code);
+
+		if (error_code.value() != 0)
+		{
+			std::string message = std::format("{} 删除 {} 失败。错误代码：{}，错误消息：{}",
+											  CODE_POS_STR,
+											  path.ToString(),
+											  error_code.value(),
+											  error_code.message());
+
+			throw std::runtime_error{message};
+		}
+
 		return;
 	}
 
-	std::error_code error_code{};
-
-	// 返回值是 uintmax_t ，含义是递归删除的项目总数。
-	auto removed_count = std::filesystem::remove_all(base::filesystem::ToWindowsLongPathString(path),
-													 error_code);
-
-	if (error_code.value() != 0)
+	if (base::filesystem::IsRegularFile(path))
 	{
-		std::string message = std::format("{} 删除 {} 失败。错误代码：{}，错误消息：{}",
-										  CODE_POS_STR,
-										  path.ToString(),
-										  error_code.value(),
-										  error_code.message());
+		std::error_code error_code{};
+		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path));
 
-		throw std::runtime_error{message};
+		if (error_code.value() != 0)
+		{
+			std::string message = std::format("{} 删除 {} 失败。错误代码：{}，错误消息：{}",
+											  CODE_POS_STR,
+											  path.ToString(),
+											  error_code.value(),
+											  error_code.message());
+
+			throw std::runtime_error{message};
+		}
+
+		return;
 	}
 
-	if (removed_count == 0)
+	if (base::filesystem::IsDirectory(path))
 	{
-		std::string message = CODE_POS_STR + "删除失败，因为删除了 0 个项目，但是没有错误代码。";
-		throw std::runtime_error{message};
+		std::error_code error_code{};
+
+		// 返回值是 uintmax_t ，含义是递归删除的项目总数。
+		auto removed_count = std::filesystem::remove_all(base::filesystem::ToWindowsLongPathString(path),
+														 error_code);
+
+		if (error_code.value() != 0)
+		{
+			std::string message = std::format("{} 删除 {} 失败。错误代码：{}，错误消息：{}",
+											  CODE_POS_STR,
+											  path.ToString(),
+											  error_code.value(),
+											  error_code.message());
+
+			throw std::runtime_error{message};
+		}
+
+		if (removed_count == 0)
+		{
+			std::string message = CODE_POS_STR + "删除失败，因为删除了 0 个项目，但是没有错误代码。";
+			throw std::runtime_error{message};
+		}
+
+		return;
 	}
+
+	throw std::runtime_error{CODE_POS_STR + path.ToString() + " 是未知的目录条目。"};
 }
 
 /* #endregion */
