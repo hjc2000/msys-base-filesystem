@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <exception>
 #include <filesystem>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -469,7 +470,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 						   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 						   nullptr,
 						   OPEN_EXISTING,
-						   FILE_FLAG_BACKUP_SEMANTICS,
+						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
 	HandleGuard g{h};
@@ -496,6 +497,8 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		reinterpret_cast<char *>(buffer.get()),
 		static_cast<size_t>(len),
 	};
+
+	std::cout << CODE_POS_STR << result << std::endl;
 
 	return WindowsLongPathStringToPath(result);
 
