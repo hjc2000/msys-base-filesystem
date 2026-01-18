@@ -566,8 +566,16 @@ void base::filesystem::Copy(base::Path const &source_path,
 		}
 
 		// 执行到这里说明源路径存在
-		if (base::filesystem::IsSymbolicLink(source_path) ||
-			!base::filesystem::IsDirectory(source_path))
+		if (base::filesystem::IsSymbolicLink(source_path))
+		{
+			base::filesystem::CopySymbolicLink(source_path,
+											   destination_path,
+											   overwrite_method);
+
+			return;
+		}
+
+		if (!base::filesystem::IsDirectory(source_path))
 		{
 			CopySingleFile(source_path, destination_path, overwrite_method);
 			return;
