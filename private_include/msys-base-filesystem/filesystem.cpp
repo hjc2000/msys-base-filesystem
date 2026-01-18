@@ -1,6 +1,7 @@
 #include "base/filesystem/filesystem.h"
 #include "base/container/iterator/IEnumerator.h"
 #include "base/filesystem/Path.h"
+#include "base/Guard.h"
 #include "base/string/define.h"
 #include <filesystem>
 #include <iostream>
@@ -15,6 +16,24 @@
 
 namespace
 {
+	class HandleGuard
+	{
+	private:
+		HANDLE _handle = INVALID_HANDLE_VALUE;
+
+	public:
+		HandleGuard(HANDLE handle)
+			: _handle{handle}
+		{
+		}
+
+		~HandleGuard()
+		{
+			CloseHandle(_handle);
+			_handle = INVALID_HANDLE_VALUE;
+		}
+	};
+
 	///
 	/// @brief 拷贝单个文件。
 	///
@@ -343,6 +362,8 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
+	HandleGuard g{h};
+
 	if (h == INVALID_HANDLE_VALUE)
 	{
 		return false;
@@ -362,7 +383,6 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 		result = (info.ReparseTag == IO_REPARSE_TAG_SYMLINK);
 	}
 
-	CloseHandle(h);
 	return result;
 }
 
@@ -427,6 +447,8 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 						   FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
+	HandleGuard g{h};
+
 	if (h == INVALID_HANDLE_VALUE)
 	{
 		throw std::runtime_error{CODE_POS_STR + "CreateFileA 调用失败，无法打开符号链接文件。"};
@@ -438,8 +460,6 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 										  buffer,
 										  MAX_PATH,
 										  FILE_NAME_NORMALIZED);
-
-	CloseHandle(h);
 
 	if (len == 0 || len >= MAX_PATH)
 	{
