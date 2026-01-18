@@ -662,7 +662,7 @@ void base::filesystem::Copy(base::Path const &source_path,
 		for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
 		{
 			base::Path relative_path{base::filesystem::WindowsLongPathStringToPath(entry.path().string())};
-			relative_path.RemoveBasePath(source_path);
+			relative_path.RemoveBasePath(base::filesystem::ToAbsolutePath(source_path));
 
 			base::Path src_path = source_path + relative_path;
 			base::Path dst_path = destination_path + relative_path;
