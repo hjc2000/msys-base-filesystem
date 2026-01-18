@@ -462,21 +462,41 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_path,
 										  base::Path const &link_to_path)
 {
-	std::error_code error_code{};
-
-	std::filesystem::create_symlink(link_to_path.ToString(),
-									symbolic_link_obj_path.ToString(),
-									error_code);
-
-	if (error_code.value() != 0)
 	{
-		std::string message = CODE_POS_STR;
+		// std::error_code error_code{};
 
-		message += std::format("创建符号链接失败。错误代码：{}，错误消息：{}",
-							   error_code.value(),
-							   error_code.message());
+		// std::filesystem::create_symlink(link_to_path.ToString(),
+		// 								symbolic_link_obj_path.ToString(),
+		// 								error_code);
 
-		throw std::runtime_error{message};
+		// if (error_code.value() != 0)
+		// {
+		// 	std::string message = CODE_POS_STR;
+
+		// 	message += std::format("创建符号链接失败。错误代码：{}，错误消息：{}",
+		// 						   error_code.value(),
+		// 						   error_code.message());
+
+		// 	throw std::runtime_error{message};
+		// }
+	}
+
+	DWORD flags = 0;
+
+	if (base::filesystem::IsDirectory(link_to_path))
+	{
+		flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
+	}
+
+	flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
+
+	bool call_result = CreateSymbolicLinkA(symbolic_link_obj_path.ToString().c_str(),
+										   link_to_path.ToString().c_str(),
+										   flags);
+
+	if (!call_result)
+	{
+		throw std::runtime_error("CreateSymbolicLinkA failed");
 	}
 }
 
