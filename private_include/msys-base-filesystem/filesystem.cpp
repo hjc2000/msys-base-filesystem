@@ -304,7 +304,7 @@ bool base::filesystem::IsExcuteable(base::Path const &path)
 bool base::filesystem::IsDirectory(base::Path const &path)
 {
 	std::error_code error_code{};
-	bool ret = std::filesystem::is_directory(path.ToString(), error_code);
+	bool ret = std::filesystem::is_directory(ToWindowsLongPathString(path), error_code);
 
 	if (error_code.value() != 0)
 	{
@@ -408,7 +408,7 @@ base::Path base::filesystem::CurrentPath()
 bool base::filesystem::Exists(base::Path const &path)
 {
 	std::error_code error_code{};
-	bool ret = std::filesystem::exists(path.ToString(), error_code);
+	bool ret = std::filesystem::exists(ToWindowsLongPathString(path), error_code);
 
 	if (error_code.value() != 0)
 	{
@@ -578,7 +578,7 @@ void base::filesystem::CreateDirectoryRecursively(base::Path const &path)
 	}
 
 	std::error_code error_code{};
-	bool ret = std::filesystem::create_directories(path.ToString(), error_code);
+	bool ret = std::filesystem::create_directories(ToWindowsLongPathString(path), error_code);
 
 	if (error_code.value() != 0)
 	{
