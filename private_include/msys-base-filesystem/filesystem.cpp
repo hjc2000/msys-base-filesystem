@@ -536,7 +536,7 @@ void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_pa
 	flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 
 	bool call_result = CreateSymbolicLinkA(ToWindowsLongPathString(symbolic_link_obj_path).c_str(),
-										   ToWindowsLongPathString(link_to_path).c_str(),
+										   link_to_path.ToString().c_str(),
 										   flags);
 
 	if (!call_result)
