@@ -45,6 +45,21 @@ namespace
 		return absolute_path_string.StdString();
 	}
 
+	base::Path WindowsLongPathStringToPath(std::string const &path_string)
+	{
+		base::String result{path_string};
+
+		// 去掉 \\?\ 前缀
+		base::String prefix = "\\\\?\\";
+
+		if (result.StartWith(prefix))
+		{
+			result.Remove(base::Range{0, prefix.Length()});
+		}
+
+		return result;
+	}
+
 	///
 	/// @brief 拷贝单个文件。
 	///
