@@ -438,7 +438,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		throw std::runtime_error{CODE_POS_STR + "CreateFileA 调用失败，无法打开符号链接文件。"};
 	}
 
-	int64_t buffer_size = 1024 * 16;
+	int64_t buffer_size = 1024 * 32;
 	std::unique_ptr<uint8_t[]> buffer{new uint8_t[buffer_size]};
 
 	DWORD len = GetFinalPathNameByHandleA(h,
