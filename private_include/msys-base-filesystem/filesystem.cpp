@@ -692,7 +692,7 @@ void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_pa
 {
 	DWORD flags = 0;
 
-	if (flags)
+	if (is_directory)
 	{
 		flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
 	}
