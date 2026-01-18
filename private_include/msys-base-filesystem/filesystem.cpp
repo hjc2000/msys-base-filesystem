@@ -376,14 +376,17 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 													   &info,
 													   sizeof(info));
 
-	bool result = false;
-
-	if (call_result)
+	if (!call_result)
 	{
-		result = (info.ReparseTag == IO_REPARSE_TAG_SYMLINK);
+		throw std::runtime_error{CODE_POS_STR + "调用 GetFileInformationByHandleEx 获取文件属性失败。"};
 	}
 
-	return result;
+	if (info.ReparseTag == IO_REPARSE_TAG_SYMLINK)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 /* #endregion */
