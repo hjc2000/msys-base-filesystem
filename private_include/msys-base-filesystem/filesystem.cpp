@@ -333,7 +333,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 	// 检查是否为符号链接标签
 	if (rdb->ReparseTag != IO_REPARSE_TAG_SYMLINK)
 	{
-		throw std::runtime_error{CODE_POS_STR + "该文件不是符号链接。"};
+		throw std::runtime_error{CODE_POS_STR + symbolic_link_obj_path.ToString() + " 不是符号链接。"};
 	}
 
 	// 提取 SubstituteName (内部存储的原始路径)
