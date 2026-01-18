@@ -495,6 +495,58 @@ void base::filesystem::Remove(base::Path const &path)
 
 /* #region Copy */
 
+void base::filesystem::CopySymbolicLink(base::Path const &source_path,
+										base::Path const &destination_path,
+										base::filesystem::OverwriteOption overwrite_method)
+{
+	try
+	{
+		if (!base::filesystem::IsSymbolicLink(source_path))
+		{
+			throw std::runtime_error{CODE_POS_STR + "源路径不是符号链接。"};
+		}
+
+		if (destination_path.IsRootPath())
+		{
+			throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
+		}
+
+		if (!base::filesystem::Exists(destination_path))
+		{
+			// 目标路径不存在。
+			base::filesystem::EnsureDirectory(destination_path.ParentPath());
+
+			base::filesystem::CreateSymboliclink(destination_path,
+												 base::filesystem::ReadSymboliclink(source_path),
+												 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
+
+			return;
+		}
+
+		// 目标路径存在
+		if (overwrite_method == base::filesystem::OverwriteOption::Skip)
+		{
+			return;
+		}
+
+		// 无条件覆盖。
+		// 无论是设置为 Overwrite 还是 Update, 都直接覆盖。
+		base::filesystem::Remove(destination_path);
+
+		base::filesystem::CreateSymboliclink(destination_path,
+											 base::filesystem::ReadSymboliclink(source_path),
+											 base::filesystem::IsSymbolicLinkDirectory(source_path.ToString()));
+	}
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+	}
+}
+
 void base::filesystem::Copy(base::Path const &source_path,
 							base::Path const &destination_path,
 							base::filesystem::OverwriteOption overwrite_method)
