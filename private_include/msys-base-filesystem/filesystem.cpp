@@ -18,42 +18,42 @@
 
 #undef CreateDirectory
 
-// 如果未定义 IO_REPARSE_TAG_SYMLINK，先定义它
+namespace
+{
+	// 如果未定义 IO_REPARSE_TAG_SYMLINK，先定义它
 #ifndef IO_REPARSE_TAG_SYMLINK
 	#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
 #endif
 
-// 手动定义 REPARSE_DATA_BUFFER 结构体
-// 注意：为了简化，这里只包含处理符号链接所需的部分
-typedef struct _REPARSE_DATA_BUFFER
-{
-	ULONG ReparseTag;
-	USHORT ReparseDataLength;
-	USHORT Reserved;
-
-	union
+	// 手动定义 REPARSE_DATA_BUFFER 结构体
+	// 注意：为了简化，这里只包含处理符号链接所需的部分
+	typedef struct REPARSE_DATA_BUFFER
 	{
-		struct
-		{
-			USHORT SubstituteNameOffset;
-			USHORT SubstituteNameLength;
-			USHORT PrintNameOffset;
-			USHORT PrintNameLength;
-			ULONG Flags;
-			WCHAR PathBuffer[1];
-		} SymbolicLinkReparseBuffer;
+		ULONG ReparseTag;
+		USHORT ReparseDataLength;
+		USHORT Reserved;
 
-		// 如果你需要处理目录交接点 (Junctions)，也可以添加 MountPointReparseBuffer
-	} DUMMYUNIONNAME;
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+		union
+		{
+			struct
+			{
+				USHORT SubstituteNameOffset;
+				USHORT SubstituteNameLength;
+				USHORT PrintNameOffset;
+				USHORT PrintNameLength;
+				ULONG Flags;
+				WCHAR PathBuffer[1];
+			} SymbolicLinkReparseBuffer;
+
+			// 如果你需要处理目录交接点 (Junctions)，也可以添加 MountPointReparseBuffer
+		} DUMMYUNIONNAME;
+	} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 // 定义符号链接标志
 #ifndef SYMLINK_FLAG_RELATIVE
 	#define SYMLINK_FLAG_RELATIVE 0x00000001
 #endif
 
-namespace
-{
 	class HandleGuard
 	{
 	private:
@@ -71,6 +71,56 @@ namespace
 			_handle = INVALID_HANDLE_VALUE;
 		}
 	};
+
+	bool IsSymbolicLinkDirectory(std::string const &path)
+	{
+		// 打开符号链接本身，而不是目标
+		HANDLE h = CreateFileA(path.c_str(),
+							   0, // 不需要访问权限，只读属性
+							   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							   nullptr,
+							   OPEN_EXISTING,
+							   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+							   nullptr);
+
+		HandleGuard g{h};
+
+		if (h == INVALID_HANDLE_VALUE)
+		{
+			// 打开失败，可能不是符号链接
+			return false;
+		}
+
+		int64_t buffer_size = 1024 * 32;
+		std::unique_ptr<uint8_t[]> buffer{new uint8_t[buffer_size]};
+
+		DWORD bytesReturned = 0;
+
+		BOOL result = DeviceIoControl(h,
+									  FSCTL_GET_REPARSE_POINT,
+									  nullptr,
+									  0,
+									  buffer.get(),
+									  buffer_size,
+									  &bytesReturned,
+									  nullptr);
+
+		if (!result)
+		{
+			return false; // 获取 reparse data 失败
+		}
+
+		REPARSE_DATA_BUFFER *rdb = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer.get());
+
+		if (rdb->ReparseTag != IO_REPARSE_TAG_SYMLINK)
+		{
+			// 不是符号链接
+			return false;
+		}
+
+		// 检查创建时是否设置了 SYMBOLIC_LINK_FLAG_DIRECTORY
+		return (rdb->SymbolicLinkReparseBuffer.Flags & SYMBOLIC_LINK_FLAG_DIRECTORY) != 0;
+	}
 
 	std::string ToWindowsLongPathString(base::Path const &path)
 	{
@@ -150,7 +200,8 @@ namespace
 			if (base::filesystem::IsSymbolicLink(source_path))
 			{
 				base::filesystem::CreateSymboliclink(destination_path,
-													 base::filesystem::ReadSymboliclink(source_path));
+													 base::filesystem::ReadSymboliclink(source_path),
+													 IsSymbolicLinkDirectory(source_path.ToString()));
 			}
 			else
 			{
@@ -176,7 +227,8 @@ namespace
 			if (base::filesystem::IsSymbolicLink(source_path))
 			{
 				base::filesystem::CreateSymboliclink(destination_path,
-													 base::filesystem::ReadSymboliclink(source_path));
+													 base::filesystem::ReadSymboliclink(source_path),
+													 IsSymbolicLinkDirectory(source_path.ToString()));
 			}
 			else
 			{
@@ -203,7 +255,8 @@ namespace
 		if (base::filesystem::IsSymbolicLink(source_path))
 		{
 			base::filesystem::CreateSymboliclink(destination_path,
-												 base::filesystem::ReadSymboliclink(source_path));
+												 base::filesystem::ReadSymboliclink(source_path),
+												 IsSymbolicLinkDirectory(source_path.ToString()));
 		}
 		else
 		{
