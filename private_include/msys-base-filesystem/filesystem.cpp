@@ -192,13 +192,13 @@ namespace
 						base::Path const &destination_path,
 						base::filesystem::OverwriteOption overwrite_method)
 	{
-		if (destination_path.IsRootPath())
-		{
-			throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
-		}
-
 		try
 		{
+			if (destination_path.IsRootPath())
+			{
+				throw std::runtime_error{CODE_POS_STR + "无法将源路径移动为根路径。"};
+			}
+
 			std::filesystem::copy_options options = std::filesystem::copy_options::copy_symlinks;
 
 			if (!base::filesystem::Exists(destination_path))
