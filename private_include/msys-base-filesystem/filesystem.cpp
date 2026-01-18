@@ -204,7 +204,7 @@ namespace
 				path_str = "./";
 			}
 
-			_current_it = std::filesystem::directory_iterator{path_str};
+			_current_it = std::filesystem::directory_iterator{ToWindowsLongPathString(path_str)};
 		}
 
 		///
@@ -224,7 +224,7 @@ namespace
 		///
 		virtual base::filesystem::DirectoryEntry const &CurrentValue() override
 		{
-			_current = base::filesystem::DirectoryEntry{_current_it->path().string()};
+			_current = base::filesystem::DirectoryEntry{WindowsLongPathStringToPath(_current_it->path().string())};
 			return _current;
 		}
 
@@ -270,7 +270,7 @@ namespace
 				path_str = "./";
 			}
 
-			_current_it = std::filesystem::recursive_directory_iterator{path_str};
+			_current_it = std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(path_str)};
 		}
 
 		///
@@ -290,7 +290,7 @@ namespace
 		///
 		virtual base::filesystem::DirectoryEntry const &CurrentValue() override
 		{
-			_current = base::filesystem::DirectoryEntry{_current_it->path().string()};
+			_current = base::filesystem::DirectoryEntry{WindowsLongPathStringToPath(_current_it->path().string())};
 			return _current;
 		}
 
