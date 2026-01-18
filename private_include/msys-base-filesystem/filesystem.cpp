@@ -18,6 +18,40 @@
 
 #undef CreateDirectory
 
+// 如果未定义 IO_REPARSE_TAG_SYMLINK，先定义它
+#ifndef IO_REPARSE_TAG_SYMLINK
+	#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#endif
+
+// 手动定义 REPARSE_DATA_BUFFER 结构体
+// 注意：为了简化，这里只包含处理符号链接所需的部分
+typedef struct _REPARSE_DATA_BUFFER
+{
+	ULONG ReparseTag;
+	USHORT ReparseDataLength;
+	USHORT Reserved;
+
+	union
+	{
+		struct
+		{
+			USHORT SubstituteNameOffset;
+			USHORT SubstituteNameLength;
+			USHORT PrintNameOffset;
+			USHORT PrintNameLength;
+			ULONG Flags;
+			WCHAR PathBuffer[1];
+		} SymbolicLinkReparseBuffer;
+
+		// 如果你需要处理目录交接点 (Junctions)，也可以添加 MountPointReparseBuffer
+	} DUMMYUNIONNAME;
+} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+// 定义符号链接标志
+#ifndef SYMLINK_FLAG_RELATIVE
+	#define SYMLINK_FLAG_RELATIVE 0x00000001
+#endif
+
 namespace
 {
 	class HandleGuard
@@ -483,19 +517,57 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 	int64_t buffer_size = 1024 * 32;
 	std::unique_ptr<uint8_t[]> buffer{new uint8_t[buffer_size]};
 
-	DWORD len = GetFinalPathNameByHandleA(h,
-										  reinterpret_cast<char *>(buffer.get()),
-										  buffer_size,
-										  FILE_NAME_NORMALIZED);
+	// === 核心修改开始 ===
+	// 使用 DeviceIoControl 获取重分析点数据，而不是解析最终路径
+	DWORD returned_len = 0;
 
-	if (len == 0 || len >= buffer_size)
+	BOOL ioResult = DeviceIoControl(h,
+									FSCTL_GET_REPARSE_POINT, // 关键指令：获取原始数据
+									nullptr, 0,
+									buffer.get(), static_cast<DWORD>(buffer_size),
+									&returned_len,
+									nullptr);
+
+	if (!ioResult || returned_len == 0)
 	{
-		throw std::runtime_error{CODE_POS_STR + "读取符号链接失败。"};
+		throw std::runtime_error{CODE_POS_STR + "DeviceIoControl 调用失败，无法读取重分析点数据。"};
 	}
 
+	// 解析缓冲区获取原始路径文本
+	REPARSE_DATA_BUFFER *rdb = reinterpret_cast<REPARSE_DATA_BUFFER *>(buffer.get());
+
+	// 检查是否为符号链接标签
+	if (rdb->ReparseTag != IO_REPARSE_TAG_SYMLINK)
+	{
+		throw std::runtime_error{CODE_POS_STR + "该文件不是符号链接。"};
+	}
+
+	// 提取 SubstituteName (内部存储的原始路径)
+	USHORT nameOffset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset;
+	USHORT nameLength = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength;
+
+	// 注意：Windows 内部使用 UTF-16，这里简单处理为字节偏移
+	WCHAR *rawPathPtr = reinterpret_cast<WCHAR *>(reinterpret_cast<BYTE *>(&rdb->SymbolicLinkReparseBuffer.PathBuffer) +
+												  nameOffset);
+
+	int wcharCount = nameLength / sizeof(WCHAR);
+
+	// 将 UTF-16 转换为 UTF-8 存入你的 buffer (覆盖之前的原始数据)
+	int utf8Len = WideCharToMultiByte(CP_UTF8, 0, rawPathPtr, wcharCount,
+									  reinterpret_cast<char *>(buffer.get()),
+									  static_cast<int>(buffer_size),
+									  nullptr, nullptr);
+
+	if (utf8Len == 0 || utf8Len >= buffer_size)
+	{
+		throw std::runtime_error{CODE_POS_STR + "路径编码转换失败。"};
+	}
+	// === 核心修改结束 ===
+
+	// 原有代码保持不变
 	std::string result{
 		reinterpret_cast<char *>(buffer.get()),
-		static_cast<size_t>(len),
+		static_cast<size_t>(utf8Len), // 使用转换后的长度
 	};
 
 	std::cout << CODE_POS_STR << result << std::endl;
