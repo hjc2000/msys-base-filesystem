@@ -584,7 +584,8 @@ void base::filesystem::CreateDirectoryRecursively(base::Path const &path)
 	{
 		std::string message = CODE_POS_STR;
 
-		message += std::format("创建目录失败。错误代码：{}，错误消息：{}",
+		message += std::format("创建目录 {} 失败。错误代码：{}，错误消息：{}",
+							   path.ToString(),
 							   error_code.value(),
 							   error_code.message());
 
