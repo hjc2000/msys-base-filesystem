@@ -429,7 +429,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 
 	if (h == INVALID_HANDLE_VALUE)
 	{
-		throw std::runtime_error{"CreateFileA failed"};
+		throw std::runtime_error{CODE_POS_STR + "CreateFileA 调用失败，无法打开符号链接文件。"};
 	}
 
 	char buffer[MAX_PATH];
@@ -443,7 +443,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 
 	if (len == 0 || len >= MAX_PATH)
 	{
-		throw std::runtime_error{"GetFinalPathNameByHandleA failed"};
+		throw std::runtime_error{CODE_POS_STR + "读取符号链接失败。"};
 	}
 
 	std::string result{buffer};
@@ -496,7 +496,7 @@ void base::filesystem::CreateSymboliclink(base::Path const &symbolic_link_obj_pa
 
 	if (!call_result)
 	{
-		throw std::runtime_error("CreateSymbolicLinkA failed");
+		throw std::runtime_error{CODE_POS_STR + "创建符号链接失败。"};
 	}
 }
 
