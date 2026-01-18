@@ -366,7 +366,7 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 
 	if (h == INVALID_HANDLE_VALUE)
 	{
-		return false;
+		throw std::runtime_error{CODE_POS_STR + "调用 CreateFileA 失败，无法打开文件。"};
 	}
 
 	FILE_ATTRIBUTE_TAG_INFO info;
