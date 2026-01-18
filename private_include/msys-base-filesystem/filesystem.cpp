@@ -1,8 +1,10 @@
 #include "base/filesystem/filesystem.h"
 #include "base/container/iterator/IEnumerator.h"
+#include "base/container/Range.h"
 #include "base/filesystem/Path.h"
+#include "base/stream/Span.h"
 #include "base/string/define.h"
-#include <cstddef>
+#include "base/string/String.h"
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
@@ -449,17 +451,19 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 		throw std::runtime_error{CODE_POS_STR + "读取符号链接失败。"};
 	}
 
-	std::string result{
-		reinterpret_cast<char *>(buffer.get()),
-		static_cast<size_t>(len),
+	base::String result{
+		base::Span{
+			buffer.get(),
+			static_cast<int64_t>(len),
+		},
 	};
 
 	// 去掉 \\?\ 前缀
-	std::string const prefix = "\\\\?\\";
+	base::String prefix = "\\\\?\\";
 
-	if (result.rfind(prefix, 0) == 0)
+	if (result.StartWith(prefix))
 	{
-		result.erase(0, prefix.size());
+		result.Remove(base::Range{0, prefix.Length()});
 	}
 
 	return result;
