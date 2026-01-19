@@ -94,6 +94,24 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	try
+	{
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
+		base::Path path = "a/b/../../../../c";
+		std::cout << path << std::endl;
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
 	// for (base::filesystem::DirectoryEntry const &entry : base::filesystem::RecursiveDirectoryEntryEnumerable{path})
 	// {
 	// 	std::cout << entry.Path() << std::endl;
