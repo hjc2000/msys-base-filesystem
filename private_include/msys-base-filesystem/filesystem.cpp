@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <fileapi.h>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -377,6 +378,8 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (base::filesystem::IsRegularFile(path))
 	{
+		base::filesystem::RemoveReadOnlyAttribute(path);
+
 		std::error_code error_code{};
 		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path));
 
@@ -396,6 +399,8 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (base::filesystem::IsDirectory(path))
 	{
+		base::filesystem::RemoveReadOnlyAttributeRecursively(path);
+
 		std::error_code error_code{};
 
 		// 返回值是 uintmax_t ，含义是递归删除的项目总数。
@@ -591,14 +596,14 @@ void base::filesystem::Copy(base::Path const &source_path,
 
 		if (base::filesystem::IsRegularFile(source_path))
 		{
-			CopyRegularFile(source_path, destination_path, overwrite_method);
+			base::filesystem::CopyRegularFile(source_path, destination_path, overwrite_method);
 			return;
 		}
 
 		if (base::filesystem::IsDirectory(source_path))
 		{
 			// 执行到这里说明源路径是目录
-			EnsureDirectory(destination_path);
+			base::filesystem::EnsureDirectory(destination_path);
 
 			// 开始递归复制
 			for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
@@ -751,3 +756,64 @@ std::shared_ptr<base::IEnumerator<base::filesystem::DirectoryEntry const>> base:
 }
 
 /* #endregion */
+
+void base::filesystem::RemoveReadOnlyAttribute(base::Path const &path)
+{
+	try
+	{
+		if (base::filesystem::IsSymbolicLink(path))
+		{
+			return;
+		}
+
+		{
+			bool is_valid_dir_item = false;
+
+			if (base::filesystem::IsRegularFile(path))
+			{
+				is_valid_dir_item = true;
+			}
+
+			if (base::filesystem::IsDirectory(path))
+			{
+				is_valid_dir_item = true;
+			}
+
+			if (!is_valid_dir_item)
+			{
+				throw std::runtime_error{CODE_POS_STR + path.ToString() + " 是未知的目录项类型。"};
+			}
+		}
+
+		DWORD attrs = GetFileAttributesA(base::filesystem::ToWindowsLongPathString(path).c_str());
+
+		if (attrs == INVALID_FILE_ATTRIBUTES)
+		{
+			throw std::runtime_error{CODE_POS_STR + "调用 GetFileAttributesA 获取文件属性失败。"};
+		}
+
+		if (!(attrs & FILE_ATTRIBUTE_READONLY))
+		{
+			// 没有只读属性，不需要移除。
+			return;
+		}
+
+		attrs &= ~FILE_ATTRIBUTE_READONLY;
+
+		bool call_result = SetFileAttributesA(base::filesystem::ToWindowsLongPathString(path).c_str(),
+											  attrs);
+
+		if (!call_result)
+		{
+			throw std::runtime_error{CODE_POS_STR + "调用 SetFileAttributesA 移除只读属性失败。"};
+		}
+	}
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+	}
+}
