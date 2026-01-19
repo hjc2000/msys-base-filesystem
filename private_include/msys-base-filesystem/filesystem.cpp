@@ -813,35 +813,3 @@ void base::filesystem::RemoveReadOnlyAttribute(base::Path const &path)
 		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
 	}
 }
-
-void base::filesystem::RemoveReadOnlyAttributeRecursively(base::Path const &path)
-{
-	try
-	{
-		if (base::filesystem::IsSymbolicLink(path))
-		{
-			RemoveReadOnlyAttribute(path);
-		}
-
-		if (base::filesystem::IsRegularFile(path))
-		{
-			RemoveReadOnlyAttribute(path);
-		}
-
-		if (base::filesystem::IsDirectory(path))
-		{
-			for (base::filesystem::DirectoryEntry const &entry : base::filesystem::RecursiveDirectoryEntryEnumerable{path})
-			{
-				RemoveReadOnlyAttribute(entry.Path());
-			}
-		}
-	}
-	catch (std::exception const &e)
-	{
-		throw std::runtime_error{CODE_POS_STR + e.what()};
-	}
-	catch (...)
-	{
-		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
-	}
-}
