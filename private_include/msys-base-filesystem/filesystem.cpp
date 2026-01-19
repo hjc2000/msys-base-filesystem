@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <fileapi.h>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -38,6 +39,71 @@ bool base::filesystem::IsExcuteable(base::Path const &path)
 }
 
 /* #endregion */
+
+void base::filesystem::RemoveReadOnlyAttribute(base::Path const &path)
+{
+	try
+	{
+		if (base::filesystem::IsSymbolicLink(path))
+		{
+			return;
+		}
+
+		{
+			bool is_valid_dir_item = false;
+
+			if (base::filesystem::IsRegularFile(path))
+			{
+				is_valid_dir_item = true;
+			}
+
+			if (base::filesystem::IsDirectory(path))
+			{
+				is_valid_dir_item = true;
+			}
+
+			if (!is_valid_dir_item)
+			{
+				throw std::runtime_error{CODE_POS_STR + path.ToString() + " 是未知的目录项类型。"};
+			}
+		}
+
+		DWORD attrs = GetFileAttributesA(base::filesystem::ToWindowsLongPathString(path).c_str());
+
+		if (attrs == INVALID_FILE_ATTRIBUTES)
+		{
+			throw std::runtime_error{CODE_POS_STR + "调用 GetFileAttributesA 获取文件属性失败。"};
+		}
+
+		if (!(attrs & FILE_ATTRIBUTE_READONLY))
+		{
+			// 没有只读属性，不需要移除。
+			return;
+		}
+
+		attrs &= ~FILE_ATTRIBUTE_READONLY;
+
+		bool call_result = SetFileAttributesA(base::filesystem::ToWindowsLongPathString(path).c_str(),
+											  attrs);
+
+		if (!call_result)
+		{
+			throw std::runtime_error{CODE_POS_STR + "调用 SetFileAttributesA 移除只读属性失败。"};
+		}
+	}
+	catch (std::exception const &e)
+	{
+		throw std::runtime_error{CODE_POS_STR + e.what()};
+	}
+	catch (...)
+	{
+		throw std::runtime_error{CODE_POS_STR + "未知的异常。"};
+	}
+}
+
+void base::filesystem::RemoveReadOnlyAttributeRecursively(base::Path const &path)
+{
+}
 
 /* #region 目标类型检查 */
 
