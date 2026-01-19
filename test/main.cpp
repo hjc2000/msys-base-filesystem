@@ -5,7 +5,7 @@
 int main()
 {
 	base::Path path = "C:/Users/huang/dev/.temp/test";
-	base::filesystem::RemoveReadOnlyAttributeRecursively(path);
+	base::filesystem::Remove(path);
 
 	return 0;
 }

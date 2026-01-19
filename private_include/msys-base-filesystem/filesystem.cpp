@@ -378,6 +378,8 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (base::filesystem::IsRegularFile(path))
 	{
+		base::filesystem::RemoveReadOnlyAttribute(path);
+
 		std::error_code error_code{};
 		std::filesystem::remove(base::filesystem::ToWindowsLongPathString(path));
 
@@ -397,6 +399,8 @@ void base::filesystem::Remove(base::Path const &path)
 
 	if (base::filesystem::IsDirectory(path))
 	{
+		base::filesystem::RemoveReadOnlyAttributeRecursively(path);
+
 		std::error_code error_code{};
 
 		// 返回值是 uintmax_t ，含义是递归删除的项目总数。
