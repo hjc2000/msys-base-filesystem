@@ -4,8 +4,8 @@
 
 int main()
 {
-	base::Path path = "C:/Users/huang/disk/ti600_2TB/cpp-lib-build-scripts/msys-clang/.repos/base-copy";
-	base::filesystem::Remove(path);
+	base::Path path = "C:/Users/huang/dev/.temp/1.png";
+	base::filesystem::RemoveReadOnlyAttribute(path);
 
 	return 0;
 }
