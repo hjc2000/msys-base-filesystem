@@ -592,14 +592,14 @@ void base::filesystem::Copy(base::Path const &source_path,
 
 		if (base::filesystem::IsRegularFile(source_path))
 		{
-			CopyRegularFile(source_path, destination_path, overwrite_method);
+			base::filesystem::CopyRegularFile(source_path, destination_path, overwrite_method);
 			return;
 		}
 
 		if (base::filesystem::IsDirectory(source_path))
 		{
 			// 执行到这里说明源路径是目录
-			EnsureDirectory(destination_path);
+			base::filesystem::EnsureDirectory(destination_path);
 
 			// 开始递归复制
 			for (auto entry : std::filesystem::recursive_directory_iterator{ToWindowsLongPathString(source_path)})
