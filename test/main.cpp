@@ -100,7 +100,7 @@ int main()
 		std::cout << "======================================================" << std::endl;
 		std::cout << CODE_POS_STR;
 
-		base::Path path = "a/b/../../../../c";
+		base::Path path = "a/b/../../../../c/../..";
 		std::cout << path << std::endl;
 	}
 	catch (std::exception const &e)
