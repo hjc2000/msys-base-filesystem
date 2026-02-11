@@ -5,6 +5,7 @@
 
 int main()
 {
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
@@ -22,6 +23,7 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
@@ -46,6 +48,7 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
@@ -70,6 +73,7 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
@@ -94,6 +98,7 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
@@ -112,6 +117,7 @@ int main()
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
+	// 测试块。
 	try
 	{
 		std::cout << std::endl;
