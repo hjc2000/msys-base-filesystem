@@ -235,13 +235,15 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 
 	int wcharCount = nameLength / sizeof(WCHAR);
 
-	// 将 UTF-16 转换为 UTF-8 存入你的 buffer (覆盖之前的原始数据)
-	int utf8Len = WideCharToMultiByte(CP_UTF8, 0, rawPathPtr, wcharCount,
-									  reinterpret_cast<char *>(buffer.get()),
-									  static_cast<int>(buffer_size),
-									  nullptr, nullptr);
+	int ansi_string_size = WideCharToMultiByte(CP_ACP,
+											   0,
+											   rawPathPtr,
+											   wcharCount,
+											   reinterpret_cast<char *>(buffer.get()),
+											   static_cast<int>(buffer_size),
+											   nullptr, nullptr);
 
-	if (utf8Len == 0 || utf8Len >= buffer_size)
+	if (ansi_string_size == 0 || ansi_string_size >= buffer_size)
 	{
 		throw std::runtime_error{CODE_POS_STR + "路径编码转换失败。"};
 	}
@@ -250,7 +252,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 	// 原有代码保持不变
 	std::string result{
 		reinterpret_cast<char *>(buffer.get()),
-		static_cast<size_t>(utf8Len), // 使用转换后的长度
+		static_cast<size_t>(ansi_string_size), // 使用转换后的长度
 	};
 
 	return base::filesystem::WindowsLongPathStringToPath(result);
