@@ -3,10 +3,10 @@
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
 #include "base/string/String.h"
-#include "msys-base-filesystem/DirectoryEntryEnumerator.h"
-#include "msys-base-filesystem/HandleGuard.h"
-#include "msys-base-filesystem/RecursiveDirectoryEntryEnumerator.h"
-#include "msys-base-filesystem/REPARSE_DATA_BUFFER.h"
+#include "msys-base/DirectoryEntryEnumerator.h"
+#include "msys-base/HandleGuard.h"
+#include "msys-base/RecursiveDirectoryEntryEnumerator.h"
+#include "msys-base/REPARSE_DATA_BUFFER.h"
 #include <cstddef>
 #include <cstdint>
 #include <exception>

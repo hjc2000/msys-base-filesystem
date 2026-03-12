@@ -124,7 +124,7 @@ int main()
 		std::cout << "======================================================" << std::endl;
 		std::cout << CODE_POS_STR;
 
-		base::Path path = base::filesystem::ReadSymboliclink("C:/Users/huang/dev/cpp-lib-build-scripts/msys-clang/.repos/msys-base-filesystem/CMakeLists.txt");
+		base::Path path = base::filesystem::ReadSymboliclink("C:/Users/huang/dev/cpp-lib-build-scripts/msys-clang/.repos/msys-base/CMakeLists.txt");
 		std::cout << path << std::endl;
 	}
 	catch (std::exception const &e)
