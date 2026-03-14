@@ -2,7 +2,10 @@
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
 #include "msys-base/windows_api.h"
+#include <consoleapi.h>
+#include <cstdint>
 #include <iostream>
+#include <string>
 
 int main()
 {
@@ -135,6 +138,20 @@ int main()
 	catch (...)
 	{
 		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
+	{
+		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		std::u16string str{u"测试中文。"};
+
+		uint32_t actual_number_of_chars_written;
+
+		WriteConsoleW(handle,
+					  str.c_str(),
+					  str.size(),
+					  reinterpret_cast<LPDWORD>(&actual_number_of_chars_written),
+					  nullptr);
 	}
 
 	return 0;
