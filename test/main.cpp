@@ -4,7 +4,6 @@
 #include "base/stream/Span.h"
 #include "base/string/define.h"
 #include "base/string/encoding/Utf16LeWriter.h"
-#include "base/string/encoding/Utf8Reader.h"
 #include "msys-base/windows_api.h"
 #include <consoleapi.h>
 #include <cstdint>
@@ -156,16 +155,18 @@ int main()
 		base::MemoryStream stream{buffer_span};
 		base::string::encoding::Utf16LeWriter writer{stream};
 
-		std::u32string str{U"测试中文。"};
+		std::u32string str{U"测试中文。\n"};
 		writer.Write(str);
 
 		uint32_t actual_number_of_chars_written;
 
 		WriteConsoleW(handle,
 					  stream.Span().Buffer(),
-					  str.size(),
+					  writer.Utf16UnitCount(),
 					  reinterpret_cast<LPDWORD>(&actual_number_of_chars_written),
 					  nullptr);
+
+		std::cout << "actual_number_of_chars_written: " << actual_number_of_chars_written << std::endl;
 	}
 
 	return 0;
