@@ -7,19 +7,16 @@
 #include "msys-base/HandleGuard.h"
 #include "msys-base/RecursiveDirectoryEntryEnumerator.h"
 #include "msys-base/REPARSE_DATA_BUFFER.h"
+#include "msys-base/windows_api.h"
 #include <cstddef>
 #include <cstdint>
 #include <exception>
-#include <fileapi.h>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <system_error>
 #include <unistd.h>
-#include <windows.h>
-
-#undef CreateDirectory
 
 /* #region 访问权限检查 */
 
