@@ -1,6 +1,7 @@
 #include "base/filesystem/filesystem.h"
 #include "base/filesystem/Path.h"
 #include "base/string/define.h"
+#include "msys-base/windows_api.h"
 #include <iostream>
 
 int main()
