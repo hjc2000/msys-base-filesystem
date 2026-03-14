@@ -1,6 +1,10 @@
 #include "base/filesystem/filesystem.h"
 #include "base/filesystem/Path.h"
+#include "base/stream/MemoryStream.h"
+#include "base/stream/Span.h"
 #include "base/string/define.h"
+#include "base/string/encoding/Utf16LeWriter.h"
+#include "base/string/encoding/Utf8Reader.h"
 #include "msys-base/windows_api.h"
 #include <consoleapi.h>
 #include <cstdint>
@@ -142,13 +146,23 @@ int main()
 
 	{
 		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		char16_t buffer[1024];
 
-		std::u16string str{u"测试中文。"};
+		base::Span buffer_span{
+			reinterpret_cast<uint8_t *>(buffer),
+			sizeof(buffer),
+		};
+
+		base::MemoryStream stream{buffer_span};
+		base::string::encoding::Utf16LeWriter writer{stream};
+
+		std::u32string str{U"测试中文。"};
+		writer.Write(str);
 
 		uint32_t actual_number_of_chars_written;
 
 		WriteConsoleW(handle,
-					  str.c_str(),
+					  stream.Span().Buffer(),
 					  str.size(),
 					  reinterpret_cast<LPDWORD>(&actual_number_of_chars_written),
 					  nullptr);
