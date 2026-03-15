@@ -155,7 +155,7 @@ int main()
 		base::MemoryStream stream{buffer_span};
 		base::string::encoding::Utf16LeWriter writer{stream};
 
-		std::u32string str{U"测试中文。\n"};
+		std::u32string str{U"测试中文。🆒😥\n"};
 		writer.Write(str);
 
 		uint32_t actual_number_of_chars_written;
