@@ -25,6 +25,7 @@ namespace msys
 		RecursiveDirectoryEntryEnumerator(base::Path const &path)
 		{
 			std::string path_str = path.ToString();
+
 			if (path_str == "")
 			{
 				path_str = "./";
