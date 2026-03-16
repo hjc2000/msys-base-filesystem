@@ -4,13 +4,13 @@
 std::shared_ptr<base::IInputIterator<base::filesystem::DirectoryEntry const>>
 base::detail::interface::filesystem::GetDirectoryEntryBeginIterator(base::Path const &path)
 {
-	std::shared_ptr<base::DirectoryEntryIterator> ret{new base::DirectoryEntryIterator{path}};
+	std::shared_ptr<base::filesystem::DirectoryEntryIterator> ret{new base::filesystem::DirectoryEntryIterator{path}};
 	return ret;
 }
 
 std::shared_ptr<base::IInputIterator<base::filesystem::DirectoryEntry const>>
 base::detail::interface::filesystem::GetDirectoryEntryEndIterator()
 {
-	std::shared_ptr<base::DirectoryEntryIterator> ret{new base::DirectoryEntryIterator{}};
+	std::shared_ptr<base::filesystem::DirectoryEntryIterator> ret{new base::filesystem::DirectoryEntryIterator{}};
 	return ret;
 }

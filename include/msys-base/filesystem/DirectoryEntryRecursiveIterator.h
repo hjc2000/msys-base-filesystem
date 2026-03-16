@@ -5,9 +5,9 @@
 #include <filesystem>
 #include <memory>
 
-namespace base
+namespace base::filesystem
 {
-	class DirectoryEntryIterator :
+	class DirectoryEntryRecursiveIterator :
 		public base::IInputIterator<base::filesystem::DirectoryEntry const>
 	{
 	private:
@@ -15,9 +15,9 @@ namespace base
 		base::filesystem::DirectoryEntry _current{};
 
 	public:
-		DirectoryEntryIterator() = default;
+		DirectoryEntryRecursiveIterator() = default;
 
-		DirectoryEntryIterator(base::Path const &path)
+		DirectoryEntryRecursiveIterator(base::Path const &path)
 		{
 			std::string path_str = path.ToString();
 
@@ -36,7 +36,7 @@ namespace base
 		///
 		virtual std::shared_ptr<base::IInputIterator<base::filesystem::DirectoryEntry const>> Clone() override
 		{
-			std::shared_ptr<DirectoryEntryIterator> ret{new DirectoryEntryIterator{*this}};
+			std::shared_ptr<DirectoryEntryRecursiveIterator> ret{new DirectoryEntryRecursiveIterator{*this}};
 			return ret;
 		}
 
@@ -58,8 +58,8 @@ namespace base
 
 		virtual bool Equal(base::IInputIterator<base::filesystem::DirectoryEntry const> const &other) const override
 		{
-			return _it == static_cast<DirectoryEntryIterator const &>(other)._it;
+			return _it == static_cast<DirectoryEntryRecursiveIterator const &>(other)._it;
 		}
 	};
 
-} // namespace base
+} // namespace base::filesystem
