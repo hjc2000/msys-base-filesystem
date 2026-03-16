@@ -19,7 +19,14 @@ namespace base
 
 		DirectoryEntryIterator(base::Path const &path)
 		{
-			_it = std::filesystem::directory_iterator{base::filesystem::ToWindowsLongPathString(path)};
+			std::string path_str = path.ToString();
+
+			if (path_str == "")
+			{
+				path_str = "./";
+			}
+
+			_it = std::filesystem::directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
 		}
 
 		///

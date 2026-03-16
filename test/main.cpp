@@ -169,5 +169,14 @@ int main()
 		std::cout << "actual_number_of_chars_written: " << actual_number_of_chars_written << std::endl;
 	}
 
+	{
+		base::filesystem::DirectoryEntryCollector collector{base::Path{"../"}};
+
+		for (base::filesystem::DirectoryEntry const &entry : collector)
+		{
+			std::cout << entry.Path() << std::endl;
+		}
+	}
+
 	return 0;
 }
