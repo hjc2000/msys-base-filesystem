@@ -178,5 +178,14 @@ int main()
 		}
 	}
 
+	{
+		base::filesystem::DirectoryEntryRecursiveCollector collector{base::Path{"../"}};
+
+		for (base::filesystem::DirectoryEntry const &entry : collector)
+		{
+			std::cout << entry.Path() << std::endl;
+		}
+	}
+
 	return 0;
 }

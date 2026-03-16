@@ -11,7 +11,7 @@ namespace base::filesystem
 		public base::IInputIterator<base::filesystem::DirectoryEntry const>
 	{
 	private:
-		std::filesystem::directory_iterator _it{};
+		std::filesystem::recursive_directory_iterator _it{};
 		base::filesystem::DirectoryEntry _current{};
 
 	public:
@@ -26,7 +26,7 @@ namespace base::filesystem
 				path_str = "./";
 			}
 
-			_it = std::filesystem::directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
+			_it = std::filesystem::recursive_directory_iterator{base::filesystem::ToWindowsLongPathString(path_str)};
 		}
 
 		///
