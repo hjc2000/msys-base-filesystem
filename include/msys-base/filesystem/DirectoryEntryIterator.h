@@ -2,8 +2,10 @@
 #include "base/container/iterator/IInputIterator.h"
 #include "base/filesystem/filesystem.h"
 #include "base/filesystem/Path.h"
+#include "base/string/define.h"
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 
 namespace base::filesystem
 {
@@ -47,12 +49,22 @@ namespace base::filesystem
 		///
 		virtual base::filesystem::DirectoryEntry const &Current() override
 		{
+			if (_it == std::filesystem::directory_iterator{})
+			{
+				throw std::runtime_error{CODE_POS_STR + "不能对 end 迭代器进行此操作。"};
+			}
+
 			_current = base::filesystem::DirectoryEntry{base::filesystem::WindowsLongPathStringToPath(_it->path().string())};
 			return _current;
 		}
 
 		virtual void Increment() override
 		{
+			if (_it == std::filesystem::directory_iterator{})
+			{
+				throw std::runtime_error{CODE_POS_STR + "不能对 end 迭代器进行此操作。"};
+			}
+
 			++_it;
 		}
 

@@ -169,22 +169,50 @@ int main()
 		std::cout << "actual_number_of_chars_written: " << actual_number_of_chars_written << std::endl;
 	}
 
+	// 测试块。
+	try
 	{
-		base::filesystem::DirectoryEntryCollector collector{base::Path{"../"}};
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
+		base::filesystem::DirectoryEntryCollector collector{base::Path{}};
 
 		for (base::filesystem::DirectoryEntry const &entry : collector)
 		{
 			std::cout << entry.Path() << std::endl;
 		}
 	}
-
+	catch (std::exception const &e)
 	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
+	// 测试块。
+	try
+	{
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
 		base::filesystem::DirectoryEntryRecursiveCollector collector{base::Path{"../"}};
 
 		for (base::filesystem::DirectoryEntry const &entry : collector)
 		{
 			std::cout << entry.Path() << std::endl;
 		}
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
 	}
 
 	return 0;
