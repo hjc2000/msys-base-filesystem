@@ -3,7 +3,7 @@
 
 /* #region 工厂函数 */
 
-std::shared_ptr<base::FileStream> base::FileStream::OpenOrCreate(base::Path const &path)
+std::shared_ptr<msys_base::FileStream> msys_base::FileStream::OpenOrCreate(base::Path const &path)
 {
 	try
 	{
@@ -29,7 +29,7 @@ std::shared_ptr<base::FileStream> base::FileStream::OpenOrCreate(base::Path cons
 	}
 }
 
-std::shared_ptr<base::FileStream> base::FileStream::CreateNewAnyway(base::Path const &path)
+std::shared_ptr<msys_base::FileStream> msys_base::FileStream::CreateNewAnyway(base::Path const &path)
 {
 	if (base::filesystem::Exists(path))
 	{
@@ -61,7 +61,7 @@ std::shared_ptr<base::FileStream> base::FileStream::CreateNewAnyway(base::Path c
 	return fs;
 }
 
-std::shared_ptr<base::FileStream> base::FileStream::OpenExisting(base::Path const &path)
+std::shared_ptr<msys_base::FileStream> msys_base::FileStream::OpenExisting(base::Path const &path)
 {
 	if (!base::filesystem::Exists(path))
 	{
@@ -106,7 +106,7 @@ std::shared_ptr<base::FileStream> base::FileStream::OpenExisting(base::Path cons
 	return fs;
 }
 
-std::shared_ptr<base::FileStream> base::FileStream::OpenReadOnly(base::Path const &path)
+std::shared_ptr<msys_base::FileStream> msys_base::FileStream::OpenReadOnly(base::Path const &path)
 {
 	if (!base::filesystem::Exists(path))
 	{
