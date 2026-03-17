@@ -1,3 +1,4 @@
+#include "base/filesystem/date_time_directory/YearDirectoryCollector.h"
 #include "base/filesystem/filesystem.h"
 #include "base/filesystem/Path.h"
 #include "base/stream/MemoryStream.h"
@@ -200,6 +201,32 @@ int main()
 		std::cout << CODE_POS_STR;
 
 		base::filesystem::DirectoryEntryRecursiveCollector collector{base::Path{"../"}};
+
+		for (base::filesystem::DirectoryEntry const &entry : collector)
+		{
+			std::cout << entry.Path() << std::endl;
+		}
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
+	// 测试块。
+	try
+	{
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
+		base::filesystem::YearDirectoryCollector collector{
+			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
+			nullptr,
+		};
 
 		for (base::filesystem::DirectoryEntry const &entry : collector)
 		{
