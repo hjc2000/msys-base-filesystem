@@ -746,12 +746,12 @@ void base::filesystem::Move(base::Path const &source_path,
 
 std::shared_ptr<base::IEnumerator<base::filesystem::DirectoryEntry const>> base::filesystem::CreateDirectoryEntryEnumerator(base::Path const &path)
 {
-	return std::shared_ptr<msys::DirectoryEntryEnumerator>{new msys::DirectoryEntryEnumerator{path}};
+	return std::shared_ptr<msys_base::DirectoryEntryEnumerator>{new msys_base::DirectoryEntryEnumerator{path}};
 }
 
 std::shared_ptr<base::IEnumerator<base::filesystem::DirectoryEntry const>> base::filesystem::CreateDirectoryEntryRecursiveEnumerator(base::Path const &path)
 {
-	return std::shared_ptr<msys::RecursiveDirectoryEntryEnumerator>{new msys::RecursiveDirectoryEntryEnumerator{path}};
+	return std::shared_ptr<msys_base::RecursiveDirectoryEntryEnumerator>{new msys_base::RecursiveDirectoryEntryEnumerator{path}};
 }
 
 /* #endregion */

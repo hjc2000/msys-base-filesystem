@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <windows.h>
 
-namespace msys
+namespace msys_base
 {
 	///
 	/// @brief 目录条目递归迭代器。
@@ -75,4 +75,4 @@ namespace msys
 		}
 	};
 
-} // namespace msys
+} // namespace msys_base
