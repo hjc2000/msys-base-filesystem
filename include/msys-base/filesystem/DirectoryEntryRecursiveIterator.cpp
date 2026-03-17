@@ -4,13 +4,13 @@
 std::shared_ptr<base::IInputIterator<base::filesystem::DirectoryEntry const>>
 base::detail::interface::filesystem::GetDirectoryEntryRecursiveBeginIterator(base::Path const &path)
 {
-	std::shared_ptr<base::filesystem::DirectoryEntryRecursiveIterator> ret{new base::filesystem::DirectoryEntryRecursiveIterator{path}};
+	std::shared_ptr<msys_base::filesystem::DirectoryEntryRecursiveIterator> ret{new msys_base::filesystem::DirectoryEntryRecursiveIterator{path}};
 	return ret;
 }
 
 std::shared_ptr<base::IInputIterator<base::filesystem::DirectoryEntry const>>
 base::detail::interface::filesystem::GetDirectoryEntryRecursiveEndIterator()
 {
-	std::shared_ptr<base::filesystem::DirectoryEntryRecursiveIterator> ret{new base::filesystem::DirectoryEntryRecursiveIterator{}};
+	std::shared_ptr<msys_base::filesystem::DirectoryEntryRecursiveIterator> ret{new msys_base::filesystem::DirectoryEntryRecursiveIterator{}};
 	return ret;
 }

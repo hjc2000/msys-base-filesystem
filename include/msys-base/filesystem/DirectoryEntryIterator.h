@@ -7,7 +7,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace base::filesystem
+namespace msys_base::filesystem
 {
 	class DirectoryEntryIterator :
 		public base::IInputIterator<base::filesystem::DirectoryEntry const>
@@ -74,4 +74,4 @@ namespace base::filesystem
 		}
 	};
 
-} // namespace base::filesystem
+} // namespace msys_base::filesystem
