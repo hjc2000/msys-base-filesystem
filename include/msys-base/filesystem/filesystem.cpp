@@ -18,25 +18,6 @@
 #include <system_error>
 #include <unistd.h>
 
-/* #region 访问权限检查 */
-
-bool base::filesystem::IsReadable(base::Path const &path)
-{
-	return access(base::filesystem::ToWindowsLongPathString(path).c_str(), R_OK) == 0;
-}
-
-bool base::filesystem::IsWriteable(base::Path const &path)
-{
-	return access(base::filesystem::ToWindowsLongPathString(path).c_str(), W_OK) == 0;
-}
-
-bool base::filesystem::IsExcuteable(base::Path const &path)
-{
-	return access(base::filesystem::ToWindowsLongPathString(path).c_str(), X_OK) == 0;
-}
-
-/* #endregion */
-
 /* #region 目标类型检查 */
 
 bool base::filesystem::IsDirectory(base::Path const &path)
