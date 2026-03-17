@@ -98,7 +98,7 @@ bool base::filesystem::IsSymbolicLink(base::Path const &path)
 						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
-	msys::HandleGuard g{h};
+	msys_base::HandleGuard g{h};
 
 	if (h == INVALID_HANDLE_VALUE)
 	{
@@ -187,7 +187,7 @@ base::Path base::filesystem::ReadSymboliclink(base::Path const &symbolic_link_ob
 						   FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
 						   nullptr);
 
-	msys::HandleGuard g{h};
+	msys_base::HandleGuard g{h};
 
 	if (h == INVALID_HANDLE_VALUE)
 	{

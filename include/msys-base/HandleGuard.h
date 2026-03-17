@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.h>
 
-namespace msys
+namespace msys_base
 {
 	class HandleGuard
 	{
@@ -21,4 +21,4 @@ namespace msys
 		}
 	};
 
-} // namespace msys
+} // namespace msys_base
