@@ -7,7 +7,6 @@
 #include "base/stream/Span.h"
 #include "base/string/define.h"
 #include "base/string/encoding/Utf16LeWriter.h"
-#include "base/time/UtcHourOffset.h"
 #include "msys-base/windows_api.h"
 #include <consoleapi.h>
 #include <cstdint>
