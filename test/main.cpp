@@ -1,11 +1,13 @@
 #include "base/filesystem/date_time_directory/YearDirectoryCollector.h"
-#include "base/filesystem/date_time_directory/YearRangeDirectoryIterator.h"
+#include "base/filesystem/date_time_directory/YearRangeDirectoryCollector.h"
 #include "base/filesystem/filesystem.h"
 #include "base/filesystem/Path.h"
+#include "base/math/interval/ClosedInterval.h"
 #include "base/stream/MemoryStream.h"
 #include "base/stream/Span.h"
 #include "base/string/define.h"
 #include "base/string/encoding/Utf16LeWriter.h"
+#include "base/time/UtcHourOffset.h"
 #include "msys-base/windows_api.h"
 #include <consoleapi.h>
 #include <cstdint>
@@ -250,8 +252,11 @@ int main()
 		std::cout << "======================================================" << std::endl;
 		std::cout << CODE_POS_STR;
 
-		base::filesystem::YearDirectoryCollector collector{
+		base::ClosedInterval<int64_t> interval{2026, 2027};
+
+		base::filesystem::YearRangeDirectoryCollector collector{
 			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
+			interval,
 			nullptr,
 		};
 
