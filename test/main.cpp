@@ -1,6 +1,6 @@
-#include "base/filesystem/date_time_directory/YearDirectoryCollector.h"
-#include "base/filesystem/date_time_directory/YearRangeDirectoryCollector.h"
 #include "base/filesystem/filesystem.h"
+#include "base/filesystem/number_directory/NumberDirectoryCollector.h"
+#include "base/filesystem/number_directory/NumberRangeDirectoryCollector.h"
 #include "base/filesystem/Path.h"
 #include "base/math/interval/ClosedInterval.h"
 #include "base/stream/MemoryStream.h"
@@ -226,7 +226,7 @@ int main()
 		std::cout << "======================================================" << std::endl;
 		std::cout << CODE_POS_STR;
 
-		base::filesystem::YearDirectoryCollector collector{
+		base::filesystem::NumberDirectoryCollector collector{
 			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
 			nullptr,
 		};
@@ -254,7 +254,7 @@ int main()
 
 		base::ClosedInterval<int64_t> interval{2026, 2027};
 
-		base::filesystem::YearRangeDirectoryCollector collector{
+		base::filesystem::NumberRangeDirectoryCollector collector{
 			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
 			interval,
 			nullptr,
