@@ -1,4 +1,6 @@
 #include "base/filesystem/filesystem.h"
+#include "base/filesystem/number_directory_iterator/Layer2NumberRangeDirectoryCollector.h"
+#include "base/filesystem/number_directory_iterator/Layer3NumberRangeDirectoryCollector.h"
 #include "base/filesystem/number_directory_iterator/NumberDirectoryCollector.h"
 #include "base/filesystem/number_directory_iterator/NumberRangeDirectoryCollector.h"
 #include "base/filesystem/Path.h"
@@ -256,6 +258,70 @@ int main()
 		base::filesystem::NumberRangeDirectoryCollector collector{
 			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
 			interval,
+			nullptr,
+		};
+
+		for (base::filesystem::DirectoryEntry const &entry : collector)
+		{
+			std::cout << entry.Path() << std::endl;
+		}
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
+	// 测试块。
+	try
+	{
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
+		base::ClosedInterval<int64_t> layer1_range{2025, 2027};
+		base::ClosedInterval<int64_t> layer2_range{0, 5};
+
+		base::filesystem::Layer2NumberRangeDirectoryCollector collector{
+			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
+			layer1_range,
+			layer2_range,
+			nullptr,
+		};
+
+		for (base::filesystem::DirectoryEntry const &entry : collector)
+		{
+			std::cout << entry.Path() << std::endl;
+		}
+	}
+	catch (std::exception const &e)
+	{
+		std::cerr << CODE_POS_STR << e.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << CODE_POS_STR << "未知异常。" << std::endl;
+	}
+
+	// 测试块。
+	try
+	{
+		std::cout << std::endl;
+		std::cout << "======================================================" << std::endl;
+		std::cout << CODE_POS_STR;
+
+		base::ClosedInterval<int64_t> layer1_range{2025, 2027};
+		base::ClosedInterval<int64_t> layer2_range{0, 5};
+		base::ClosedInterval<int64_t> layer3_range{0, 31};
+
+		base::filesystem::Layer3NumberRangeDirectoryCollector collector{
+			base::Path{"C:/Users/huang/disk/ti600_2TB/.temp"},
+			layer1_range,
+			layer2_range,
+			layer3_range,
 			nullptr,
 		};
 
