@@ -1,6 +1,6 @@
 #include "base/filesystem/filesystem.h"
-#include "base/filesystem/number_directory/NumberDirectoryCollector.h"
-#include "base/filesystem/number_directory/NumberRangeDirectoryCollector.h"
+#include "base/filesystem/number_directory_iterator/NumberDirectoryCollector.h"
+#include "base/filesystem/number_directory_iterator/NumberRangeDirectoryCollector.h"
 #include "base/filesystem/Path.h"
 #include "base/math/interval/ClosedInterval.h"
 #include "base/stream/MemoryStream.h"
